@@ -9,7 +9,8 @@ namespace CustomRenderPipeline
     {
         public CRenderer(CRendererData data): base(data)
         {
-            
+            //m_BlitMaterial = CoreUtils.CreateEngineMaterial(data.shaders.coreBlitPS);
+            // m_MainLightShadowCasterPass = new MainLightShadowCasterPass(RenderPassEvent.BeforeRenderingShadows);
         }
     }
 }

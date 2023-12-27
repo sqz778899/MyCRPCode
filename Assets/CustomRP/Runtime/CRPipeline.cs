@@ -38,6 +38,7 @@ namespace CustomRenderPipeline
         static void RenderCameraStack(ScriptableRenderContext context, Camera baseCamera)
         {
             //Step1. SetCamera
+            Debug.Log(asset.renderer.Name);
             CameraData CameraData = new CameraData();
             CameraData.camera = baseCamera;
             CameraData.cameraTargetDescriptor = CreateRenderTextureDescriptor(baseCamera,asset.renderScale);
@@ -48,7 +49,11 @@ namespace CustomRenderPipeline
 
         static void RenderSingleCamera(ScriptableRenderContext context, ref CameraData cameraData)
         {
-            
+            ref CRenderer renderer = ref asset.renderer;
+            cameraData.camera.TryGetCullingParameters(false, out var cullingParams);
+                
+            CommandBuffer cmd = CommandBufferPool.Get();
+            renderer.Clear();
         }
     }
 }

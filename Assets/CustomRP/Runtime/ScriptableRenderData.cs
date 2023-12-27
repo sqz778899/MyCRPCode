@@ -1,7 +1,11 @@
-﻿namespace CustomRenderPipeline
+﻿using UnityEngine;
+using UnityEngine.Rendering;
+
+namespace CustomRenderPipeline
 {
     public abstract class ScriptableRenderData
     {
+        
         internal bool isInvalidated { get; set; }
         protected abstract ScriptableRenderer Create();
         
@@ -10,5 +14,6 @@
             isInvalidated = false;
             return Create();
         }
+        
     }
 }

@@ -5,7 +5,6 @@ namespace CustomRenderPipeline
 {
     public abstract class ScriptableRenderData
     {
-        
         internal bool isInvalidated { get; set; }
         protected abstract ScriptableRenderer Create();
         
@@ -14,6 +13,5 @@ namespace CustomRenderPipeline
             isInvalidated = false;
             return Create();
         }
-        
     }
 }

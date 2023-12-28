@@ -51,9 +51,55 @@ namespace CustomRenderPipeline
         {
             ref CRenderer renderer = ref asset.renderer;
             cameraData.camera.TryGetCullingParameters(false, out var cullingParams);
-                
+            
             CommandBuffer cmd = CommandBufferPool.Get();
             renderer.Clear();
+            renderer.SetupCullingParameters(ref cullingParams, asset.maxShadowDistance);
+            var cullResults = context.Cull(ref cullingParams);
+            InitializeRenderingData(ref cullResults,ref cameraData,cmd, out var renderingData);
+            
+            renderer.Setup(context, ref renderingData);
+            //renderer.Execute(context, ref renderingData);
         }
+
+        #region InitRendering
+        static void InitializeRenderingData(ref CullingResults cullResults,
+            ref CameraData cameraData, CommandBuffer cmd,out RenderingData renderingData)
+        {
+            renderingData = new RenderingData();
+            VisibleLight visiblelight = cullResults.visibleLights[0];
+            bool mainLightCastShadows = visiblelight.light.shadows != LightShadows.None;
+            
+            renderingData.commandBuffer = cmd;
+            renderingData.cullResults = cullResults;
+            renderingData.cameraData = cameraData;
+            InitializeLightData(visiblelight,ref renderingData);
+            InitializeShadowData(visiblelight,ref renderingData,mainLightCastShadows);
+        }
+
+        static void InitializeLightData(VisibleLight visiblelight,ref RenderingData renderingData)
+        {
+            ref LightData lightData = ref renderingData.lightData;
+            lightData.visibleLight = visiblelight;
+        }
+
+        static void InitializeShadowData(VisibleLight visiblelight,ref RenderingData renderingData,bool mainLightCastShadows)
+        {
+            ref ShadowData shadowData = ref renderingData.shadowData;
+            m_ShadowBiasData.Clear();
+            m_ShadowResolutionData.Clear();
+            m_ShadowBiasData.Add(new Vector4(visiblelight.light.shadowBias, 
+                visiblelight.light.shadowNormalBias, 0.0f, 0.0f));
+            m_ShadowResolutionData.Add((int)visiblelight.light.shadowResolution);
+            //.................Shadow Settings.................
+            shadowData.supportsMainLightShadows = mainLightCastShadows;
+            shadowData.bias = m_ShadowBiasData;
+            shadowData.resolution = m_ShadowResolutionData;
+            shadowData.mainLightShadowCascadesCount = asset.shadowCascadeCount;
+            shadowData.mainLightShadowCascadeBorder = asset.cascadeBorder;
+            shadowData.mainLightShadowmapWidth = asset.mainLightShadowmapResolution;
+            shadowData.mainLightShadowmapHeight = asset.mainLightShadowmapResolution;
+        }
+        #endregion
     }
 }

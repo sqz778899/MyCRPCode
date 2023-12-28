@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -8,11 +9,10 @@ namespace CustomRenderPipeline
     {
         RTHandleRenderTargetIdentifierCompat m_CameraColorTarget;
         RTHandleRenderTargetIdentifierCompat m_CameraDepthTarget;
+        List<ScriptableRenderPass> m_ActiveRenderPassQueue = new List<ScriptableRenderPass>(32);
         
-        public ScriptableRenderer(ScriptableRenderData data)
-        {
-            
-        }
+        public abstract void Setup(ScriptableRenderContext context, ref RenderingData renderingData);
+        
         internal struct RTHandleRenderTargetIdentifierCompat
         {
             public RTHandle handle;
@@ -26,9 +26,25 @@ namespace CustomRenderPipeline
             m_CameraColorTarget = new RTHandleRenderTargetIdentifierCompat { fallback = BuiltinRenderTextureType.CameraTarget };
             m_CameraDepthTarget = new RTHandleRenderTargetIdentifierCompat { fallback = BuiltinRenderTextureType.CameraTarget };
         }
-        
+
+        public void EnqueuePass(ScriptableRenderPass pass)
+        {
+            m_ActiveRenderPassQueue.Add(pass);
+        }
+        public void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
+        {
+            //.................Setp 1 SetLight..........................
+            //.................Setp 2 Set Camera..........................
+            //.................Setp 3 Execute Opaque..........................
+            //.................Setp 4 Finish Rendering................................
+        }
         //手动GC
         public void Dispose()
+        {
+            
+        }
+        
+        public ScriptableRenderer(ScriptableRenderData data)
         {
             
         }

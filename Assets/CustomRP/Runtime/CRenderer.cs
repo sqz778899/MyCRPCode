@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEditor.VersionControl;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
@@ -8,15 +9,27 @@ namespace CustomRenderPipeline
     public class CRenderer: ScriptableRenderer
     {
         public string Name = "XXX";
-        public CRenderer(CRendererData data): base(data)
+        //.................装配的Pass.................
+        DrawObjectsPass m_RenderOpaqueForwardPass;
+        
+        public void SetupCullingParameters(ref ScriptableCullingParameters cullingParameters,
+            float shadowDistance)
         {
-            //m_BlitMaterial = CoreUtils.CreateEngineMaterial(data.shaders.coreBlitPS);
-            // m_MainLightShadowCasterPass = new MainLightShadowCasterPass(RenderPassEvent.BeforeRenderingShadows);
+            cullingParameters.maximumVisibleLights = 1;
+            cullingParameters.shadowDistance = shadowDistance;
+            cullingParameters.conservativeEnclosingSphere = true;
+            cullingParameters.numIterationsEnclosingSphere = 64;
         }
 
-        public void Clear()
+        public override void Setup(ScriptableRenderContext context, ref RenderingData renderingData)
         {
-            throw new NotImplementedException();
+            EnqueuePass(m_RenderOpaqueForwardPass);
+        }
+        
+
+        public CRenderer(CRendererData data): base(data)
+        {
+            m_RenderOpaqueForwardPass = new DrawObjectsPass(RenderPassEvent.BeforeRenderingOpaques);
         }
     }
 }

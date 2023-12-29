@@ -16,7 +16,7 @@ namespace CustomRenderPipeline
             
             Camera camera = cameras[0];
             RenderCameraStack(context, camera);
-            camera.TryGetCullingParameters(false, out var cullingParameters);
+            /*camera.TryGetCullingParameters(false, out var cullingParameters);
             CullingResults cullingResults = context.Cull(ref cullingParameters);
 
 
@@ -32,13 +32,12 @@ namespace CustomRenderPipeline
                 cullingResults, ref drawingSettings, ref filteringSettings
             );
 
-            context.Submit();
+            context.Submit();*/
         }
 
         static void RenderCameraStack(ScriptableRenderContext context, Camera baseCamera)
         {
             //Step1. SetCamera
-            Debug.Log(asset.renderer.Name);
             CameraData CameraData = new CameraData();
             CameraData.camera = baseCamera;
             CameraData.cameraTargetDescriptor = CreateRenderTextureDescriptor(baseCamera,asset.renderScale);
@@ -59,7 +58,8 @@ namespace CustomRenderPipeline
             InitializeRenderingData(ref cullResults,ref cameraData,cmd, out var renderingData);
             
             renderer.Setup(context, ref renderingData);
-            //renderer.Execute(context, ref renderingData);
+            renderer.Execute(context, ref renderingData);
+            context.Submit();
         }
 
         #region InitRendering

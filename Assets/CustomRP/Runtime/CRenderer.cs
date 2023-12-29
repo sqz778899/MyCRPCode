@@ -8,9 +8,12 @@ namespace CustomRenderPipeline
 {
     public class CRenderer: ScriptableRenderer
     {
-        public string Name = "XXX";
+        //.................装配的Light.................
+        ForwardLights m_ForwardLights;
         //.................装配的Pass.................
         DrawObjectsPass m_RenderOpaqueForwardPass;
+        DrawSkyboxPass m_DrawSkyboxPass;
+        FinalBlitPass m_FinalBlitPass;
         
         public void SetupCullingParameters(ref ScriptableCullingParameters cullingParameters,
             float shadowDistance)
@@ -24,12 +27,22 @@ namespace CustomRenderPipeline
         public override void Setup(ScriptableRenderContext context, ref RenderingData renderingData)
         {
             EnqueuePass(m_RenderOpaqueForwardPass);
+            EnqueuePass(m_DrawSkyboxPass);
+            EnqueuePass(m_FinalBlitPass);
         }
-        
+
+        public override void SetupLights(ScriptableRenderContext context, ref RenderingData renderingData)
+        {
+            m_ForwardLights.Setup(context, ref renderingData);
+        }
+
 
         public CRenderer(CRendererData data): base(data)
         {
+            m_ForwardLights = new ForwardLights();
             m_RenderOpaqueForwardPass = new DrawObjectsPass(RenderPassEvent.BeforeRenderingOpaques);
+            m_DrawSkyboxPass = new DrawSkyboxPass(RenderPassEvent.BeforeRenderingSkybox);
+            m_FinalBlitPass = new FinalBlitPass(RenderPassEvent.AfterRendering);
         }
     }
 }

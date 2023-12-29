@@ -1,4 +1,7 @@
-﻿namespace CustomRenderPipeline
+﻿using UnityEngine;
+using UnityEngine.Rendering;
+
+namespace CustomRenderPipeline
 {
     public enum RenderPassEvent
     {
@@ -16,8 +19,11 @@
         AfterRendering = 1000,
     }
 
-    public class ScriptableRenderPass
+    public abstract class ScriptableRenderPass
     {
         public RenderPassEvent renderPassEvent;
+        public RTHandle colorAttachmentHandle;
+
+        public abstract void Execute(ScriptableRenderContext context, ref RenderingData renderingData);
     }
 }

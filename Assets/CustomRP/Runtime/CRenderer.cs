@@ -12,6 +12,7 @@ namespace CustomRenderPipeline
         ForwardLights m_ForwardLights;
         //.................装配的Pass.................
         DrawObjectsPass m_RenderOpaqueForwardPass;
+        MainLightShadowCasterPass m_MainLightShadowCasterPass;
         DrawSkyboxPass m_DrawSkyboxPass;
         FinalBlitPass m_FinalBlitPass;
         
@@ -26,7 +27,10 @@ namespace CustomRenderPipeline
 
         public override void Setup(ScriptableRenderContext context, ref RenderingData renderingData)
         {
+            m_MainLightShadowCasterPass.Setup(ref renderingData);
+            
             EnqueuePass(m_RenderOpaqueForwardPass);
+            EnqueuePass(m_MainLightShadowCasterPass);
             EnqueuePass(m_DrawSkyboxPass);
             EnqueuePass(m_FinalBlitPass);
         }
@@ -40,6 +44,7 @@ namespace CustomRenderPipeline
         {
             m_ForwardLights = new ForwardLights();
             m_RenderOpaqueForwardPass = new DrawObjectsPass(RenderPassEvent.BeforeRenderingOpaques);
+            m_MainLightShadowCasterPass = new MainLightShadowCasterPass(RenderPassEvent.BeforeRenderingShadows);
             m_DrawSkyboxPass = new DrawSkyboxPass(RenderPassEvent.BeforeRenderingSkybox);
             m_FinalBlitPass = new FinalBlitPass(RenderPassEvent.AfterRendering);
         }

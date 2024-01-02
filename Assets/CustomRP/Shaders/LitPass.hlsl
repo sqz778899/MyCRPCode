@@ -40,7 +40,7 @@ Varyings LitPassVertex(Attributes input)
     output.uv = TRANSFORM_TEX(input.texcoord, _BaseMap);
     output.normalWS = SafeNormalize(mul(input.normalOS, (float3x3)UNITY_MATRIX_I_M));
     output.tangentWS = half4(SafeNormalize(float3(mul((float3x3)UNITY_MATRIX_M, input.tangentOS.xyz))),1);
-    output.positionCS = mul(UNITY_MATRIX_VP, input.positionOS);
+    output.positionCS = mul(UNITY_MATRIX_VP,  mul(unity_ObjectToWorld, float4(input.positionOS.xyz, 1.0)));
     return output;
 }
 

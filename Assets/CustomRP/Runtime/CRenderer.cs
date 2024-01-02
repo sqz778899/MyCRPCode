@@ -36,7 +36,6 @@ namespace CustomRenderPipeline
             m_ForwardLights.Setup(context, ref renderingData);
         }
 
-
         public CRenderer(CRendererData data): base(data)
         {
             m_ForwardLights = new ForwardLights();

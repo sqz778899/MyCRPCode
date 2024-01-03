@@ -68,9 +68,30 @@ namespace CustomRenderPipeline
             CullingResults cullResults = renderingData.cullResults;
             LightData lightData = renderingData.lightData;
             ShadowData shadowData = renderingData.shadowData;
+            
             VisibleLight shadowLight = lightData.visibleLight;
             CommandBuffer cmd = renderingData.commandBuffer;
+
+            ShadowDrawingSettings settings = new ShadowDrawingSettings(cullResults,0,BatchCullingProjectionType.Orthographic);
+            cmd.SetGlobalVector(ShaderPropertyId.worldSpaceCameraPos, 
+                renderingData.cameraData.camera.transform.position);
             
+            for (int cascadeIndex = 0; cascadeIndex < m_ShadowCasterCascadesCount; ++cascadeIndex)
+            {
+                settings.splitData = m_CascadeSlices[cascadeIndex].splitData;
+                Vector4 shadowBias = ShadowUtils.GetShadowBias(ref shadowLight,
+                    shadowLightIndex, ref renderingData.shadowData, 
+                    m_CascadeSlices[cascadeIndex].projectionMatrix, m_CascadeSlices[cascadeIndex].resolution);
+                cmd.SetGlobalVector("_ShadowBias", shadowBias);
+                Vector3 lightDirection = -shadowLight.localToWorldMatrix.GetColumn(2);
+                cmd.SetGlobalVector("_LightDirection", new Vector4(lightDirection.x, lightDirection.y, lightDirection.z, 0.0f));
+                Vector3 lightPosition = shadowLight.localToWorldMatrix.GetColumn(3);
+                cmd.SetGlobalVector("_LightPosition", new Vector4(lightPosition.x, lightPosition.y, lightPosition.z, 1.0f));
+                
+            }
+
+
+
             Debug.Log("Shadow");
         }
         

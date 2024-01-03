@@ -90,6 +90,24 @@ namespace CustomRenderPipeline
             return result;
         }
 
+        public static Vector4 GetShadowBias(ref VisibleLight shadowLight,
+            int shadowLightIndex, ref ShadowData shadowData,
+            Matrix4x4 lightProjectionMatrix,float shadowResolution)
+        {
+            float frustumSize = 0;
+            if (shadowLight.lightType == LightType.Directional)
+            {
+                // Frustum size is guaranteed to be a cube as we wrap shadow frustum around a sphere
+                frustumSize = 2.0f / lightProjectionMatrix.m00;
+            }
+            
+            float texelSize = frustumSize / shadowResolution;
+            float depthBias = -shadowData.bias[shadowLightIndex].x * texelSize;
+            float normalBias = -shadowData.bias[shadowLightIndex].y * texelSize;
+            
+            return new Vector4(depthBias, normalBias, 0.0f, 0.0f);
+        }
+
         #region Math
         static void ApplySliceTransform(ref ShadowSliceData shadowSliceData, int atlasWidth, int atlasHeight)
         {

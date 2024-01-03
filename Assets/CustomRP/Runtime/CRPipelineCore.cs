@@ -38,6 +38,11 @@ namespace CustomRenderPipeline
         public LightData lightData;
         public ShadowData shadowData;
     }
+
+    internal static class ShaderPropertyId
+    {
+        public static readonly int worldSpaceCameraPos = Shader.PropertyToID("_WorldSpaceCameraPos");
+    }
     
     public sealed partial class CRPipeline
     {

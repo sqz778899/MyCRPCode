@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
+using UnityEngine.Experimental.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
 
 namespace CustomRenderPipeline
@@ -62,6 +64,30 @@ namespace CustomRenderPipeline
                 ApplySliceTransform(ref shadowSliceData, shadowmapWidth, shadowmapHeight);
 
             return success;
+        }
+        
+        
+        public static void ShadowRTNeedsReAlloc(ref RTHandle handle,
+            int width, int height, int bits, 
+            int anisoLevel = 1, float mipMapBias = 0, string name = "")
+        {
+            if (handle == null || handle.rt == null)
+                return;
+            if (handle.useScaling)
+                return;
+            handle = AllocShadowRT(width, height, bits, anisoLevel, mipMapBias, name);
+        }
+        
+        public static RTHandle AllocShadowRT(int width, int height, int bits, int anisoLevel, float mipMapBias, string name)
+        {
+            GraphicsFormat format = GraphicsFormatUtility.GetDepthStencilFormat(bits, 0);
+            RenderTextureDescriptor rtd = 
+                new RenderTextureDescriptor(width, height, 
+                    GraphicsFormat.None, format);
+
+            rtd.shadowSamplingMode = ShadowSamplingMode.CompareDepths;
+            RTHandle result = RTHandles.Alloc(rtd, FilterMode.Bilinear, TextureWrapMode.Clamp, isShadowMap: true, name: name);
+            return result;
         }
 
         #region Math

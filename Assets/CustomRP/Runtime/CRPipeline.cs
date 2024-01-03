@@ -38,11 +38,12 @@ namespace CustomRenderPipeline
         static void RenderCameraStack(ScriptableRenderContext context, Camera baseCamera)
         {
             //Step1. SetCamera
-            CameraData CameraData = new CameraData();
-            CameraData.camera = baseCamera;
-            CameraData.cameraTargetDescriptor = CreateRenderTextureDescriptor(baseCamera,asset.renderScale);
+            CameraData cameraData = new CameraData();
+            cameraData.camera = baseCamera;
+            cameraData.maxShadowDistance = Mathf.Min(asset.maxShadowDistance, baseCamera.farClipPlane);
+            cameraData.cameraTargetDescriptor = CreateRenderTextureDescriptor(baseCamera,asset.renderScale);
             //Step2. Rendering
-            RenderSingleCamera(context, ref CameraData);
+            RenderSingleCamera(context, ref cameraData);
             //Step3. EndRendering
         }
 

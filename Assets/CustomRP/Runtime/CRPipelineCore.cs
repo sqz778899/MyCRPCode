@@ -8,6 +8,7 @@ namespace CustomRenderPipeline
     public struct CameraData
     {
         public Camera camera;
+        public float maxShadowDistance;
         public ScriptableRenderer renderer;
         public RenderTextureDescriptor cameraTargetDescriptor;
     }

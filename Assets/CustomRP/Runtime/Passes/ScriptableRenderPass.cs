@@ -23,7 +23,8 @@ namespace CustomRenderPipeline
     {
         public RenderPassEvent renderPassEvent;
         public RTHandle colorAttachmentHandle;
-
+        
+        internal bool useNativeRenderPass { get; set; }
         public abstract void Execute(ScriptableRenderContext context, ref RenderingData renderingData);
     }
 }

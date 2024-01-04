@@ -6,11 +6,16 @@ Shader "CRPipline/Lit"
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { "RenderType"="Opaque"}
         LOD 100
 
         Pass
         {
+            Name "CustomLit"
+            Tags
+            {
+                "LightMode" = "CustomLit"
+            }
             HLSLPROGRAM
             #pragma target 2.0
             //#pragma vertex vert
@@ -26,6 +31,22 @@ Shader "CRPipline/Lit"
             #pragma fragment LitPassFragment
             
 
+            ENDHLSL
+        }
+        Pass
+        {
+            Name "ShadowCaster"
+            Tags
+            {
+                "LightMode" = "ShadowCaster"
+            }
+            ColorMask 0
+            
+            HLSLPROGRAM
+            #pragma target 2.0
+            #include "./ShadowCasterPass.hlsl"
+            #pragma vertex ShadowPassVertex
+            #pragma fragment ShadowPassFragment
             ENDHLSL
         }
     }

@@ -10,7 +10,6 @@ namespace CustomRenderPipeline
         //private readonly CRPipelineAsset pipelineAsset;
         //public const string k_ShaderTagName = "UniversalPipeline";
         
-        static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
         protected override void Render(ScriptableRenderContext context, Camera[] cameras)
         {
             

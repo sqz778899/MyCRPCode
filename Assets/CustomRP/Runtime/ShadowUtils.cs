@@ -72,10 +72,7 @@ namespace CustomRenderPipeline
             int anisoLevel = 1, float mipMapBias = 0, string name = "")
         {
             if (handle == null || handle.rt == null)
-                return;
-            if (handle.useScaling)
-                return;
-            handle = AllocShadowRT(width, height, bits, anisoLevel, mipMapBias, name);
+                handle = AllocShadowRT(width, height, bits, anisoLevel, mipMapBias, name);
         }
         
         public static RTHandle AllocShadowRT(int width, int height, int bits, int anisoLevel, float mipMapBias, string name)
@@ -88,6 +85,25 @@ namespace CustomRenderPipeline
             rtd.shadowSamplingMode = ShadowSamplingMode.CompareDepths;
             RTHandle result = RTHandles.Alloc(rtd, FilterMode.Bilinear, TextureWrapMode.Clamp, isShadowMap: true, name: name);
             return result;
+        }
+        
+        public static void RenderShadowSlice(CommandBuffer cmd, ref ScriptableRenderContext context,
+            ref ShadowSliceData shadowSliceData, ref ShadowDrawingSettings settings,
+            Matrix4x4 proj, Matrix4x4 view)
+        {
+            cmd.SetGlobalDepthBias(1.0f, 2.5f);
+            //Cascade shadow map atlas layout
+            cmd.SetViewport(new Rect(shadowSliceData.offsetX, shadowSliceData.offsetY, 
+                shadowSliceData.resolution, shadowSliceData.resolution));
+            cmd.SetViewProjectionMatrices(view, proj);
+            context.ExecuteCommandBuffer(cmd);
+            cmd.Clear();
+            context.DrawShadows(ref settings);
+            cmd.DisableScissorRect();
+            context.ExecuteCommandBuffer(cmd);
+            cmd.Clear();
+
+            cmd.SetGlobalDepthBias(0.0f, 0.0f); // Restore previous depth bias values
         }
 
         public static Vector4 GetShadowBias(ref VisibleLight shadowLight,

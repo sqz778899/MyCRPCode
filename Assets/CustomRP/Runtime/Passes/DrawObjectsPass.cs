@@ -7,9 +7,10 @@ namespace CustomRenderPipeline
     public class DrawObjectsPass : ScriptableRenderPass
     {
         static readonly int s_DrawObjectPassDataPropID = Shader.PropertyToID("_DrawObjectPassData");
+        //"LightMode" = "CustomLit"
         ShaderTagId[] shaderTagIds = new ShaderTagId[]
         {
-            new ShaderTagId("SRPDefaultUnlit"),
+            //new ShaderTagId("SRPDefaultUnlit"),
             new ShaderTagId("CustomLit")
         };
         

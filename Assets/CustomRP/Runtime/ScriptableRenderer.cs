@@ -37,7 +37,11 @@ namespace CustomRenderPipeline
 
         public virtual void SetupLights(ScriptableRenderContext context, ref RenderingData renderingData) {}
         public void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
-        {
+        {  
+            ref CameraData cameraData = ref renderingData.cameraData;
+            CommandBuffer cmd = CommandBufferPool.Get();
+            /*foreach (var pass in m_ActiveRenderPassQueue)
+                pass.Configure(cmd, cameraData.cameraTargetDescriptor);*/
             //.................Setp 1 SetLight..........................
             SetupLights(context, ref renderingData);
             //.................Setp 2 Set Camera..........................

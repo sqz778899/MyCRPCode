@@ -40,8 +40,8 @@ namespace CustomRenderPipeline
         {  
             ref CameraData cameraData = ref renderingData.cameraData;
             CommandBuffer cmd = CommandBufferPool.Get();
-            /*foreach (var pass in m_ActiveRenderPassQueue)
-                pass.Configure(cmd, cameraData.cameraTargetDescriptor);*/
+            foreach (var pass in m_ActiveRenderPassQueue)
+                pass.Configure(cmd, cameraData.cameraTargetDescriptor);
             //.................Setp 1 SetLight..........................
             SetupLights(context, ref renderingData);
             //.................Setp 2 Set Camera..........................

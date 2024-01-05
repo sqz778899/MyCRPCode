@@ -83,21 +83,33 @@ namespace CustomRenderPipeline
             cmd.SetGlobalVector(ShaderPropertyId.worldSpaceCameraPos, 
                 renderingData.cameraData.camera.transform.position);
             
-            for (int cascadeIndex = 0; cascadeIndex < m_ShadowCasterCascadesCount; ++cascadeIndex)
-            {
-                settings.splitData = m_CascadeSlices[cascadeIndex].splitData;
-                Vector4 shadowBias = ShadowUtils.GetShadowBias(ref shadowLight,
-                    shadowLightIndex, ref renderingData.shadowData, 
-                    m_CascadeSlices[cascadeIndex].projectionMatrix, m_CascadeSlices[cascadeIndex].resolution);
-                cmd.SetGlobalVector("_ShadowBias", shadowBias);
-                Vector3 lightDirection = -shadowLight.localToWorldMatrix.GetColumn(2);
-                cmd.SetGlobalVector("_LightDirection", new Vector4(lightDirection.x, lightDirection.y, lightDirection.z, 0.0f));
-                Vector3 lightPosition = shadowLight.localToWorldMatrix.GetColumn(3);
-                cmd.SetGlobalVector("_LightPosition", new Vector4(lightPosition.x, lightPosition.y, lightPosition.z, 1.0f));
-                ShadowUtils.RenderShadowSlice(cmd, ref context, ref m_CascadeSlices[cascadeIndex],
-                    ref settings, m_CascadeSlices[cascadeIndex].projectionMatrix, m_CascadeSlices[cascadeIndex].viewMatrix);
-                
-            }
+            settings.splitData = m_CascadeSlices[0].splitData;
+
+            Vector4 shadowBias = ShadowUtils.GetShadowBias(ref shadowLight, shadowLightIndex, 
+                ref renderingData.shadowData, m_CascadeSlices[0].projectionMatrix,
+                m_CascadeSlices[0].resolution);
+            
+            cmd.SetGlobalVector("_ShadowBias", shadowBias);
+            Vector3 lightDirection = -shadowLight.localToWorldMatrix.GetColumn(2);
+            cmd.SetGlobalVector("_LightDirection", 
+                new Vector4(lightDirection.x, lightDirection.y, lightDirection.z, 0.0f));
+            Vector3 lightPosition = shadowLight.localToWorldMatrix.GetColumn(3);
+            cmd.SetGlobalVector("_LightPosition", 
+                new Vector4(lightPosition.x, lightPosition.y, lightPosition.z, 1.0f));
+            
+            cmd.SetGlobalDepthBias(1.0f, 2.5f);
+            cmd.SetViewport(new Rect(m_CascadeSlices[0].offsetX, m_CascadeSlices[0].offsetY, 
+                m_CascadeSlices[0].resolution, m_CascadeSlices[0].resolution));
+            cmd.SetViewProjectionMatrices(m_CascadeSlices[0].viewMatrix, m_CascadeSlices[0].projectionMatrix);
+            context.ExecuteCommandBuffer(cmd);
+            cmd.Clear();
+            context.DrawShadows(ref settings);
+            cmd.DisableScissorRect();
+            context.ExecuteCommandBuffer(cmd);
+            cmd.Clear();
+            cmd.SetGlobalDepthBias(0.0f, 0.0f); // Restore previous depth bias values
+
+            //SetupMainLightShadowReceiverConstants(cmd, ref shadowLight, ref renderingData.shadowData);
 
 
             cmd.SetGlobalTexture(m_MainLightShadowmapID, m_MainLightShadowmapTexture.nameID);

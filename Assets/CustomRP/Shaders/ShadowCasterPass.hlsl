@@ -64,6 +64,7 @@ Varyings ShadowPassVertex(Attributes input)
 
 half4 ShadowPassFragment(Varyings input) : SV_TARGET
 {
-    return 0;
+    half depth = input.positionCS.z / input.positionCS.w;
+    return half4(depth, 1, 1, 1);
 }
 #endif

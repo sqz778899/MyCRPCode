@@ -41,6 +41,7 @@ namespace CustomRenderPipeline
             cameraData.camera = baseCamera;
             cameraData.maxShadowDistance = Mathf.Min(asset.maxShadowDistance, baseCamera.farClipPlane);
             cameraData.cameraTargetDescriptor = CreateRenderTextureDescriptor(baseCamera,asset.renderScale);
+            context.SetupCameraProperties(baseCamera);
             //Step2. Rendering
             RenderSingleCamera(context, ref cameraData);
             //Step3. EndRendering

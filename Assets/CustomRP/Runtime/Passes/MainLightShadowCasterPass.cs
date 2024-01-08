@@ -29,6 +29,7 @@ namespace CustomRenderPipeline
         public void Setup(ref RenderingData renderingData)
         {
             Debug.Log("Shadow Setup");
+            
             Light light = renderingData.lightData.visibleLight.light;
             renderingData.cullResults.GetShadowCasterBounds(shadowLightIndex, out Bounds bounds);
 
@@ -111,7 +112,7 @@ namespace CustomRenderPipeline
             //SetupMainLightShadowReceiverConstants(cmd, ref shadowLight, ref renderingData.shadowData);
 
 
-            //cmd.SetGlobalTexture(m_MainLightShadowmapID, m_MainLightShadowmapTexture.nameID);
+            cmd.SetGlobalTexture(m_MainLightShadowmapID, m_MainLightShadowmapTexture.nameID);
             Debug.Log("Shadow");
         }
         

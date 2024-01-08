@@ -21,8 +21,14 @@ namespace CustomRenderPipeline
 
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
+        
             ref CameraData cameraData = ref renderingData.cameraData;
             CommandBuffer cmd = renderingData.commandBuffer;
+          
+            cmd.SetViewport(new Rect(0, 0, Screen.width, Screen.height)); // 恢复 Viewport
+            cmd.SetViewProjectionMatrices(cameraData.camera.worldToCameraMatrix, cameraData.camera.projectionMatrix); // 恢复矩阵
+            context.ExecuteCommandBuffer(cmd);
+            cmd.Clear();
             //.................Setp 1 Set Global parameter..........................
             cmd.SetGlobalVector(s_DrawObjectPassDataPropID, new Vector4(0,0,0,1));
             context.ExecuteCommandBuffer(cmd);

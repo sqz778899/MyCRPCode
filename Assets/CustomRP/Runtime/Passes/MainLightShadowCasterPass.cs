@@ -6,7 +6,6 @@ namespace CustomRenderPipeline
 {
     public class MainLightShadowCasterPass: ScriptableRenderPass
     {
-        static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas");
         const int k_MaxCascades = 4;
         const int k_ShadowmapBufferBits = 16;
         float m_CascadeBorder;
@@ -56,24 +55,18 @@ namespace CustomRenderPipeline
             RenderTextureDescriptor rtd = new RenderTextureDescriptor(renderTargetWidth, renderTargetHeight,
                 GraphicsFormat.None, GraphicsFormat.D16_UNorm);
             rtd.shadowSamplingMode = ShadowSamplingMode.CompareDepths;
-            m_MainLightShadowmapTexture = RTHandles.Alloc(rtd, FilterMode.Point, TextureWrapMode.Clamp, isShadowMap: true, name: "_MainLightShadowmapTexture");
+            
+            m_MainLightShadowmapTexture?.Release();
+            m_MainLightShadowmapTexture = RTHandles.Alloc(rtd, FilterMode.Point, TextureWrapMode.Clamp,
+                isShadowMap: true, name: "_MainLightShadowmapTexture");
 
             m_MaxShadowDistanceSq = renderingData.cameraData.maxShadowDistance * renderingData.cameraData.maxShadowDistance;
             m_CascadeBorder = renderingData.shadowData.mainLightShadowCascadeBorder;
             m_CreateEmptyShadowmap = false;
             useNativeRenderPass = true;
         }
-        public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
-        {
-            var rt = new RenderTargetIdentifier(m_MainLightShadowmapTexture.nameID,
-                0, CubemapFace.Unknown, -1);
-            cmd.SetRenderTarget(rt, 
-                RenderBufferLoadAction.DontCare, 
-                RenderBufferStoreAction.Store);
-        }
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
-          
             ref CullingResults cullResults = ref renderingData.cullResults;
             ref LightData lightData = ref renderingData.lightData;
             ref VisibleLight shadowLight = ref lightData.visibleLight;
@@ -103,6 +96,12 @@ namespace CustomRenderPipeline
             cmd.SetViewProjectionMatrices(m_CascadeSlices[0].viewMatrix, m_CascadeSlices[0].projectionMatrix);
             context.ExecuteCommandBuffer(cmd);
             cmd.Clear();
+            
+            cmd.SetRenderTarget(m_MainLightShadowmapTexture.rt);
+            cmd.ClearRenderTarget(true, true, Color.black); // 清空 RenderTexture
+            context.ExecuteCommandBuffer(cmd);
+            cmd.Clear();
+            
             context.DrawShadows(ref settings);
             cmd.DisableScissorRect();
             context.ExecuteCommandBuffer(cmd);
@@ -112,7 +111,7 @@ namespace CustomRenderPipeline
             //SetupMainLightShadowReceiverConstants(cmd, ref shadowLight, ref renderingData.shadowData);
 
 
-            cmd.SetGlobalTexture(m_MainLightShadowmapID, m_MainLightShadowmapTexture.nameID);
+            //cmd.SetGlobalTexture(m_MainLightShadowmapID, m_MainLightShadowmapTexture.nameID);
             Debug.Log("Shadow");
         }
         

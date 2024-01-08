@@ -40,6 +40,7 @@ Shader "CRPipline/Lit"
             {
                 "LightMode" = "ShadowCaster"
             }
+            
             ColorMask 0
             
             HLSLPROGRAM

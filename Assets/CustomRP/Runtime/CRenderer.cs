@@ -29,8 +29,8 @@ namespace CustomRenderPipeline
         {
             m_MainLightShadowCasterPass.Setup(ref renderingData);
             
-            EnqueuePass(m_RenderOpaqueForwardPass);
             EnqueuePass(m_MainLightShadowCasterPass);
+            EnqueuePass(m_RenderOpaqueForwardPass);
             EnqueuePass(m_DrawSkyboxPass);
             EnqueuePass(m_FinalBlitPass);
         }

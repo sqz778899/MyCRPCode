@@ -2,6 +2,7 @@
 #define CUSTOM_LIT_PASS_INCLUDED
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 #include "../ShaderLibrary/Core.hlsl"
+#include "../ShaderLibrary/RealtimeLights.hlsl"
 //#include "../ShaderLibrary/ShaderVariablesFunctions.hlsl"
 #include "./LitInput.hlsl"
 
@@ -40,7 +41,9 @@ Varyings LitPassVertex(Attributes input)
     output.uv = TRANSFORM_TEX(input.texcoord, _BaseMap);
     output.normalWS = SafeNormalize(mul(input.normalOS, (float3x3)UNITY_MATRIX_I_M));
     output.tangentWS = half4(SafeNormalize(float3(mul((float3x3)UNITY_MATRIX_M, input.tangentOS.xyz))),1);
-    output.positionCS = mul(UNITY_MATRIX_VP,  mul(unity_ObjectToWorld, float4(input.positionOS.xyz, 1.0)));
+    half4 worldPos = mul(unity_ObjectToWorld, float4(input.positionOS.xyz, 1.0));
+    output.positionWS = worldPos.xyz;
+    output.positionCS = mul(UNITY_MATRIX_VP, worldPos);
     return output;
 }
 
@@ -49,8 +52,11 @@ half4 LitPassFragment(Varyings input): SV_Target
 {
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+    
+    Light light = GetMainLight(TransformWorldToShadowCoord(input.positionWS));
     half NOL = saturate(dot(input.normalWS, _MainLightPosition.xyz)) * _MainLightColor;
-    half3 Color = _MainLightColor.rgb * NOL;
+    half3 Color = _MainLightColor.rgb * NOL * light.shadowAttenuation;
+    
     return half4(Color, 1);
 }
 #endif

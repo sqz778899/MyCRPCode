@@ -4,6 +4,7 @@
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonMaterial.hlsl"
 #include "../ShaderLibrary/Input.hlsl"
 
+#define MAX_SHADOW_CASCADES 4
 ///////////////Structs/////////////////////
 
 /////////////////Texture2D/////////////////////
@@ -12,6 +13,8 @@ TEXTURE2D_SHADOW(_MainLightShadowmapTexture);
 SAMPLER_CMP(sampler_LinearClampCompare);
 
 ///////////////Parameter/////////////////////
+float4x4    _MainLightWorldToShadow;
+
 float4      _MainLightShadowOffset0; // xy: offset0, zw: offset1
 float4      _MainLightShadowOffset1; // xy: offset2, zw: offset3
 float4      _MainLightShadowParams;   // (x: shadowStrength, y: >= 1.0 if soft shadows, 0.0 otherwise, z: main light fade scale, w: main light fade bias)
@@ -26,9 +29,16 @@ half MainLightRealtimeShadow(float4 shadowCoord)
     real shadowStrength = shadowParams.x;
     attenuation = real(SAMPLE_TEXTURE2D_SHADOW(_MainLightShadowmapTexture,
         sampler_LinearClampCompare, shadowCoord.xyz));
-    attenuation = LerpWhiteTo(attenuation, shadowStrength);
+    //attenuation = LerpWhiteTo(attenuation, shadowStrength);
     
     return attenuation;
+}
+
+float4 TransformWorldToShadowCoord(float3 positionWS)
+{
+    float4 shadowCoord = mul(_MainLightWorldToShadow, float4(positionWS, 1.0));
+
+    return float4(shadowCoord.xyz, 0);
 }
 
 #endif

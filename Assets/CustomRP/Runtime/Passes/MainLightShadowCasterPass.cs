@@ -14,7 +14,11 @@ namespace CustomRenderPipeline
         int m_ShadowCasterCascadesCount;
         int renderTargetWidth;
         int renderTargetHeight;
-        int m_MainLightShadowmapID;
+
+        #region ShaderPropertyID
+        int m_MainLightShadowmapID = Shader.PropertyToID("_MainLightShadowmapTexture");
+        int m_WorldToShadow = Shader.PropertyToID("_MainLightWorldToShadow");
+        #endregion
         
         internal RTHandle m_MainLightShadowmapTexture;
         
@@ -99,7 +103,7 @@ namespace CustomRenderPipeline
             cmd.Clear();
             
             cmd.SetRenderTarget(m_MainLightShadowmapTexture.rt);
-            cmd.ClearRenderTarget(true, true, Color.black); // 清空 RenderTexture
+            cmd.ClearRenderTarget(true, false, Color.black); // 清空 RenderTexture
             context.ExecuteCommandBuffer(cmd);
             cmd.Clear();
             
@@ -108,10 +112,13 @@ namespace CustomRenderPipeline
             context.ExecuteCommandBuffer(cmd);
             cmd.Clear();
             cmd.SetGlobalDepthBias(0.0f, 0.0f); // Restore previous depth bias values
-
+            
+            Matrix4x4 noOpShadowMatrix = Matrix4x4.zero;
+            noOpShadowMatrix.m22 = (SystemInfo.usesReversedZBuffer) ? 1.0f : 0.0f;
+            
+            m_MainLightShadowMatrices[0] = m_CascadeSlices[0].projectionMatrix * m_CascadeSlices[0].viewMatrix;
+            cmd.SetGlobalMatrix(m_WorldToShadow, m_CascadeSlices[0].shadowTransform);
             //SetupMainLightShadowReceiverConstants(cmd, ref shadowLight, ref renderingData.shadowData);
-
-
             cmd.SetGlobalTexture(m_MainLightShadowmapID, m_MainLightShadowmapTexture.nameID);
             Debug.Log("Shadow");
         }
@@ -122,20 +129,6 @@ namespace CustomRenderPipeline
             m_CascadeSlices = new ShadowSliceData[k_MaxCascades];
             m_CascadeSplitDistances = new Vector4[k_MaxCascades];
             renderPassEvent = evt;
-            
-            m_MainLightShadowmapID = Shader.PropertyToID("_MainLightShadowmapTexture");
-        }
-        
-        bool SetupForEmptyRendering(ref RenderingData renderingData)
-        {
-            /*if (!renderingData.cameraData.renderer.stripShadowsOffVariants)
-                return false;
-
-            m_CreateEmptyShadowmap = true;
-            useNativeRenderPass = false;
-            ShadowUtils.ShadowRTReAllocateIfNeeded(ref m_EmptyLightShadowmapTexture, 1, 1, k_ShadowmapBufferBits, name: "_EmptyLightShadowmapTexture");*/
-
-            return true;
         }
     }
 }

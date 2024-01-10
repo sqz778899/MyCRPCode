@@ -15,5 +15,5 @@ MonoBehaviour:
   renderScale: 1
   shadowCascadeCount: 1
   cascadeBorder: 0.1
-  maxShadowDistance: 50
+  maxShadowDistance: 20
   mainLightShadowmapResolution: 2048

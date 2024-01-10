@@ -29,8 +29,6 @@ Shader "CRPipline/Lit"
             #include "./LitPass.hlsl"
             #pragma vertex LitPassVertex
             #pragma fragment LitPassFragment
-            
-
             ENDHLSL
         }
         Pass

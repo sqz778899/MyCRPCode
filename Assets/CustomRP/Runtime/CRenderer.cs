@@ -8,6 +8,9 @@ namespace CustomRenderPipeline
 {
     public class CRenderer: ScriptableRenderer
     {
+        //.................常量参数
+        internal const int k_maxVisibleLights = 256;
+        internal const int k_numEnclosingSphere = 64;//我也不知道包围球给多少，就64吧，URP这么做的
         //.................装配的Light.................
         ForwardLights m_ForwardLights;
         //.................装配的Pass.................
@@ -19,10 +22,10 @@ namespace CustomRenderPipeline
         public void SetupCullingParameters(ref ScriptableCullingParameters cullingParameters,
             float shadowDistance)
         {
-            cullingParameters.maximumVisibleLights = 1;
+            cullingParameters.maximumVisibleLights = k_maxVisibleLights;
             cullingParameters.shadowDistance = shadowDistance;
             cullingParameters.conservativeEnclosingSphere = true;
-            cullingParameters.numIterationsEnclosingSphere = 64;
+            cullingParameters.numIterationsEnclosingSphere = k_numEnclosingSphere;
         }
 
         public override void Setup(ScriptableRenderContext context, ref RenderingData renderingData)

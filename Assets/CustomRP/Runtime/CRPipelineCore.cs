@@ -5,6 +5,7 @@ using UnityEngine.Rendering;
 
 namespace CustomRenderPipeline
 {
+
     public struct CameraData
     {
         public Camera camera;
@@ -15,7 +16,8 @@ namespace CustomRenderPipeline
 
     public struct LightData
     {
-        public VisibleLight visibleLight;
+        public int mainLightIndex;
+        public NativeArray<VisibleLight> visibleLights;
     }
 
     public struct ShadowData

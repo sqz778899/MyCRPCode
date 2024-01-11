@@ -22,21 +22,27 @@ namespace CustomRenderPipeline
             
             ref CullingResults cullingResults = ref renderingData.cullResults;
             ref ShadowData shadowData = ref renderingData.shadowData;
-            ref ShadowSliceData shadowSliceData = ref m_CascadeSlices[0];
-            int shadowResolution = shadowData.resolution[0];
+            ref ShadowSliceData[] shadowSliceData = ref m_CascadeSlices;
             
-            cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(
-                shadowLightIndex, 0,
-                shadowData.mainLightShadowCascadesCount, shadowData.mainLightShadowCascadesSplit, 
-                shadowResolution, mainlight.shadowNearPlane,
-                out shadowSliceData.viewMatrix, out shadowSliceData.projectionMatrix, out shadowSliceData.splitData);
-            
-            m_CascadeSplitDistances[0] = shadowSliceData.splitData.cullingSphere;
-            shadowSliceData.offsetX = 0;
-            shadowSliceData.offsetY = 0;
-            shadowSliceData.resolution = shadowResolution;
-            shadowSliceData.shadowTransform = ShadowUtils.GetShadowTransform(shadowSliceData.projectionMatrix, shadowSliceData.viewMatrix);
-            shadowSliceData.splitData.shadowCascadeBlendCullingFactor = 1.0f;
+            //
+            int shadowResolution = GetMaxTileResolutionInAtlas(shadowData.mainLightShadowmapWidth,
+                shadowData.mainLightShadowmapHeight,
+                shadowData.mainLightShadowCascadesCount);
+            for (int i = 0; i < shadowData.mainLightShadowCascadesCount; i++)
+            {
+                cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(
+                    shadowLightIndex, i,
+                    shadowData.mainLightShadowCascadesCount, shadowData.mainLightShadowCascadesSplit, 
+                    shadowResolution, mainlight.shadowNearPlane,
+                    out shadowSliceData[i].viewMatrix, out shadowSliceData[i].projectionMatrix, out shadowSliceData[i].splitData);
+                
+                m_CascadeSplitDistances[i] = shadowSliceData[i].splitData.cullingSphere;
+                shadowSliceData[i].offsetX = (i % 2) * shadowResolution;
+                shadowSliceData[i].offsetY = (i / 2) * shadowResolution;
+                shadowSliceData[i].resolution = shadowResolution;
+                shadowSliceData[i].shadowTransform = ShadowUtils.GetShadowTransform(shadowSliceData[i].projectionMatrix, shadowSliceData[i].viewMatrix);
+                shadowSliceData[i].splitData.shadowCascadeBlendCullingFactor = 1.0f;
+            }
 
             CreateShadowRT(ref renderingData);
         }
@@ -49,39 +55,48 @@ namespace CustomRenderPipeline
             VisibleLight shadowLight = lightData.visibleLights[mainLightIndex];
             ref CommandBuffer cmd = ref renderingData.commandBuffer;
 
+            if (shadowLight.light.shadows == LightShadows.None)
+                return;
+            
             ShadowDrawingSettings settings = new ShadowDrawingSettings(
                 cullResults,mainLightIndex, BatchCullingProjectionType.Orthographic);
             
-            Vector4 shadowBias = ShadowUtils.GetShadowBias(ref shadowLight, lightData.mainLightIndex, 
-                ref renderingData.shadowData, m_CascadeSlices[0].projectionMatrix, m_CascadeSlices[0].resolution);
-            //Set一些全局变量给Shader用
-            cmd.SetGlobalVector(GlobalVector.shadowBias, shadowBias);
-            Vector3 lightDirection = -shadowLight.localToWorldMatrix.GetColumn(2);
-            cmd.SetGlobalVector(GlobalVector.lightDir, 
-                new Vector4(lightDirection.x, lightDirection.y, lightDirection.z, 0.0f));
-            Vector3 lightPosition = shadowLight.localToWorldMatrix.GetColumn(3);
-            cmd.SetGlobalVector(GlobalVector.lightPos, 
-                new Vector4(lightPosition.x, lightPosition.y, lightPosition.z, 1.0f));
-            //准备绘制Shadow！！
-            cmd.SetGlobalDepthBias(1.0f, 2.5f);
-            cmd.SetViewport(new Rect(m_CascadeSlices[0].offsetX, m_CascadeSlices[0].offsetY, 
-                m_CascadeSlices[0].resolution, m_CascadeSlices[0].resolution));
-            cmd.SetViewProjectionMatrices(m_CascadeSlices[0].viewMatrix, m_CascadeSlices[0].projectionMatrix);
-            context.ExecuteCommandBuffer(cmd);
-            cmd.Clear();
             cmd.SetRenderTarget(m_MainLightShadowmapTexture.rt);
             cmd.ClearRenderTarget(true, false, Color.black); // 清空 RenderTexture
             context.ExecuteCommandBuffer(cmd);
             cmd.Clear();
-            //绘制Shadow！！
-            context.DrawShadows(ref settings);
-            //结束绘制Shadow，把一些变量还原
-            cmd.DisableScissorRect();//画完阴影之后，记得关闭裁剪，不然后续渲染会被这个裁剪影响。
-            context.ExecuteCommandBuffer(cmd);
-            cmd.Clear();
-            cmd.SetGlobalDepthBias(0.0f, 0.0f); // 还原偏移值
-            //设置采样阴影贴图的矩阵和贴图，为后续阴影Shader采样提供数据
-            cmd.SetGlobalMatrix(ShaderPropertyId.worldToShadowMatrix, m_CascadeSlices[0].shadowTransform);
+            for (int i = 0; i < renderingData.shadowData.mainLightShadowCascadesCount; i++)
+            {
+                Vector4 shadowBias = ShadowUtils.GetShadowBias(ref shadowLight, lightData.mainLightIndex, 
+                    ref renderingData.shadowData, m_CascadeSlices[i].projectionMatrix, m_CascadeSlices[i].resolution);
+                //Set一些全局变量给Shader用
+                cmd.SetGlobalVector(GlobalVector.shadowBias, shadowBias);
+                Vector3 lightDirection = -shadowLight.localToWorldMatrix.GetColumn(2);
+                cmd.SetGlobalVector(GlobalVector.lightDir, 
+                    new Vector4(lightDirection.x, lightDirection.y, lightDirection.z, 0.0f));
+                Vector3 lightPosition = shadowLight.localToWorldMatrix.GetColumn(3);
+                cmd.SetGlobalVector(GlobalVector.lightPos, 
+                    new Vector4(lightPosition.x, lightPosition.y, lightPosition.z, 1.0f));
+                
+                //准备绘制Shadow！！
+                cmd.SetGlobalDepthBias(1.0f, 2.5f);
+                cmd.SetViewport(new Rect(m_CascadeSlices[i].offsetX, m_CascadeSlices[i].offsetY, 
+                    m_CascadeSlices[i].resolution, m_CascadeSlices[i].resolution));
+                cmd.SetViewProjectionMatrices(m_CascadeSlices[i].viewMatrix, m_CascadeSlices[i].projectionMatrix);
+                context.ExecuteCommandBuffer(cmd);
+                cmd.Clear();
+
+                //绘制Shadow！！
+                context.DrawShadows(ref settings);
+                //结束绘制Shadow，把一些变量还原
+                cmd.DisableScissorRect();//画完阴影之后，记得关闭裁剪，不然后续渲染会被这个裁剪影响。
+                context.ExecuteCommandBuffer(cmd);
+                cmd.Clear();
+                cmd.SetGlobalDepthBias(0.0f, 0.0f); // 还原偏移值
+                //设置采样阴影贴图的矩阵和贴图，为后续阴影Shader采样提供数据
+                cmd.SetGlobalMatrix(ShaderPropertyId.worldToShadowMatrix, m_CascadeSlices[i].shadowTransform);
+            }
+            
             cmd.SetGlobalTexture(ShaderPropertyId.shadowmapID, m_MainLightShadowmapTexture.nameID);
         }
 
@@ -105,6 +120,18 @@ namespace CustomRenderPipeline
             m_MainLightShadowmapTexture?.Release();
             m_MainLightShadowmapTexture = RTHandles.Alloc(rtd, FilterMode.Point, TextureWrapMode.Clamp,
                 isShadowMap: true, name: GlobaName.shadowMapName);
+        }
+
+        public int GetMaxTileResolutionInAtlas(int atlasWidth, int atlasHeight, int tileCount)
+        {
+            int resolution = Mathf.Min(atlasWidth, atlasHeight);
+            int currentTileCount = atlasWidth / resolution * atlasHeight / resolution;
+            while (currentTileCount < tileCount)
+            {
+                resolution = resolution >> 1;
+                currentTileCount = atlasWidth / resolution * atlasHeight / resolution;
+            }
+            return resolution;
         }
         #endregion
     }

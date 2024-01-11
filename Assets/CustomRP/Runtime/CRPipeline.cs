@@ -57,6 +57,7 @@ namespace CustomRenderPipeline
             renderingData.commandBuffer = cmd;
             renderingData.cullResults = cullResults;
             renderingData.cameraData = cameraData;
+            cmd.SetGlobalVector(ShaderPropertyId.worldSpaceCameraPos, cameraData.camera.transform.position);
             InitializeLightData(visiblelights,ref renderingData,out bool isShadowOn);
             InitializeShadowData(ref renderingData,isShadowOn);
         }
@@ -89,7 +90,7 @@ namespace CustomRenderPipeline
             
             m_ShadowBiasData.Add(new Vector4(mainLight.shadowBias, 
                 mainLight.shadowNormalBias, 0.0f, 0.0f));
-            m_ShadowResolutionData.Add((int)mainLight.shadowResolution);
+            m_ShadowResolutionData.Add(asset.mainLightShadowmapResolution);
             //.................Shadow Settings.................
             shadowData.supportsMainLightShadows = isShadowOn;
             shadowData.bias = m_ShadowBiasData;

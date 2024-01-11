@@ -40,12 +40,25 @@ namespace CustomRenderPipeline
         public LightData lightData;
         public ShadowData shadowData;
     }
+    internal static class GlobaName
+    {
+        public static readonly string shadowMapName = "_MainLightShadowmapTexture";
+    }
 
     internal static class ShaderPropertyId
     {
         public static readonly int worldSpaceCameraPos = Shader.PropertyToID("_WorldSpaceCameraPos");
+        //...............Shadow About.................
+        public static readonly int worldToShadowMatrix = Shader.PropertyToID("_MainLightWorldToShadow");
+        public static readonly int shadowmapID = Shader.PropertyToID(GlobaName.shadowMapName);
     }
-    
+
+    internal static class GlobalVector
+    {
+        public static readonly string shadowBias = "_ShadowBias";
+        public static readonly string lightDir = "_LightDirection";
+        public static readonly string lightPos = "_LightPosition";
+    }
     public sealed partial class CRPipeline
     {
         static List<Vector4> m_ShadowBiasData = new List<Vector4>();
@@ -53,21 +66,6 @@ namespace CustomRenderPipeline
         public static CRPipelineAsset asset
         {
             get => GraphicsSettings.currentRenderPipeline as CRPipelineAsset;
-        }
-        static RenderTextureDescriptor CreateRenderTextureDescriptor(Camera camera, float renderScale)
-        {
-            int scaledWidth = (int)(camera.pixelWidth * renderScale);
-            int scaledHeight = (int)(camera.pixelHeight * renderScale);
-            
-            RenderTextureDescriptor desc;
-            if (camera.targetTexture == null)
-                desc = new RenderTextureDescriptor(camera.pixelWidth, camera.pixelHeight);
-            else
-                desc = camera.targetTexture.descriptor;
-            
-            desc.width = scaledWidth;
-            desc.height = scaledHeight;
-            return desc;
         }
     }
 }

@@ -7,7 +7,6 @@ namespace CustomRenderPipeline
     public class MainLightShadowCasterPass: ScriptableRenderPass
     {
         const int k_MaxCascades = 4;
-        int m_ShadowCasterCascadesCount;
         
         internal RTHandle m_MainLightShadowmapTexture;
         
@@ -40,11 +39,29 @@ namespace CustomRenderPipeline
                 shadowSliceData[i].offsetX = (i % 2) * shadowResolution;
                 shadowSliceData[i].offsetY = (i / 2) * shadowResolution;
                 shadowSliceData[i].resolution = shadowResolution;
-                shadowSliceData[i].shadowTransform = ShadowUtils.GetShadowTransform(shadowSliceData[i].projectionMatrix, shadowSliceData[i].viewMatrix);
+                shadowSliceData[i].shadowTransform = ShadowUtils.GetShadowTransform(
+                    shadowSliceData[i].projectionMatrix, shadowSliceData[i].viewMatrix);
                 shadowSliceData[i].splitData.shadowCascadeBlendCullingFactor = 1.0f;
+
+                if (shadowData.mainLightShadowCascadesCount > 1)
+                    ApplySliceTransform(ref shadowSliceData[i], shadowData.mainLightShadowmapWidth, shadowData.mainLightShadowmapHeight);
             }
 
             CreateShadowRT(ref renderingData);
+        }
+        
+        public void ApplySliceTransform(ref ShadowSliceData shadowSliceData, int atlasWidth, int atlasHeight)
+        {
+            Matrix4x4 sliceTransform = Matrix4x4.identity;
+            float oneOverAtlasWidth = 1.0f / atlasWidth;
+            float oneOverAtlasHeight = 1.0f / atlasHeight;
+            sliceTransform.m00 = shadowSliceData.resolution * oneOverAtlasWidth;
+            sliceTransform.m11 = shadowSliceData.resolution * oneOverAtlasHeight;
+            sliceTransform.m03 = shadowSliceData.offsetX * oneOverAtlasWidth;
+            sliceTransform.m13 = shadowSliceData.offsetY * oneOverAtlasHeight;
+
+            // Apply shadow slice scale and offset
+            shadowSliceData.shadowTransform = sliceTransform * shadowSliceData.shadowTransform;
         }
         
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
@@ -94,9 +111,22 @@ namespace CustomRenderPipeline
                 cmd.Clear();
                 cmd.SetGlobalDepthBias(0.0f, 0.0f); // 还原偏移值
                 //设置采样阴影贴图的矩阵和贴图，为后续阴影Shader采样提供数据
-                cmd.SetGlobalMatrix(ShaderPropertyId.worldToShadowMatrix, m_CascadeSlices[i].shadowTransform);
+                m_MainLightShadowMatrices[i] = m_CascadeSlices[i].shadowTransform;
             }
-            
+            //设置采样阴影贴图的矩阵和贴图，为后续阴影Shader采样提供数据
+            if (renderingData.shadowData.mainLightShadowCascadesCount > 1)
+            {
+                cmd.SetGlobalVector(ShaderPropertyId.cascadeShadowSplitSpheres0, m_CascadeSplitDistances[0]);
+                cmd.SetGlobalVector(ShaderPropertyId.cascadeShadowSplitSpheres1, m_CascadeSplitDistances[1]);
+                cmd.SetGlobalVector(ShaderPropertyId.cascadeShadowSplitSpheres2, m_CascadeSplitDistances[2]);
+                cmd.SetGlobalVector(ShaderPropertyId.cascadeShadowSplitSpheres3, m_CascadeSplitDistances[3]);
+                cmd.SetGlobalVector(ShaderPropertyId.cascadeShadowSplitSphereRadii, new Vector4(
+                    m_CascadeSplitDistances[0].w * m_CascadeSplitDistances[0].w,
+                    m_CascadeSplitDistances[1].w * m_CascadeSplitDistances[1].w,
+                    m_CascadeSplitDistances[2].w * m_CascadeSplitDistances[2].w,
+                    m_CascadeSplitDistances[3].w * m_CascadeSplitDistances[3].w));
+            }
+            cmd.SetGlobalMatrixArray(ShaderPropertyId.worldToShadowMatrix, m_MainLightShadowMatrices);
             cmd.SetGlobalTexture(ShaderPropertyId.shadowmapID, m_MainLightShadowmapTexture.nameID);
         }
 

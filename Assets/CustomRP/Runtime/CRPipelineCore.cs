@@ -51,6 +51,11 @@ namespace CustomRenderPipeline
         //...............Shadow About.................
         public static readonly int worldToShadowMatrix = Shader.PropertyToID("_MainLightWorldToShadow");
         public static readonly int shadowmapID = Shader.PropertyToID(GlobaName.shadowMapName);
+        public static readonly int cascadeShadowSplitSpheres0 = Shader.PropertyToID("_CascadeShadowSplitSpheres0");
+        public static readonly int cascadeShadowSplitSpheres1 = Shader.PropertyToID("_CascadeShadowSplitSpheres1");
+        public static readonly int cascadeShadowSplitSpheres2 = Shader.PropertyToID("_CascadeShadowSplitSpheres2");
+        public static readonly int cascadeShadowSplitSpheres3 = Shader.PropertyToID("_CascadeShadowSplitSpheres3");
+        public static readonly int cascadeShadowSplitSphereRadii = Shader.PropertyToID("_CascadeShadowSplitSphereRadii");
     }
 
     internal static class GlobalVector

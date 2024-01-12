@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CRPipelineAsset
   m_EditorClassIdentifier: 
   renderScale: 1
-  shadowCascadeCount: 1
+  shadowCascadeCount: 4
   cascadeBorder: 0.1
   maxShadowDistance: 20
   mainLightShadowmapResolution: 2048

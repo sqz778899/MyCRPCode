@@ -95,6 +95,8 @@ namespace CustomRenderPipeline
             m_ShadowBiasData.Add(new Vector4(mainLight.shadowBias, 
                 mainLight.shadowNormalBias, 0.0f, 0.0f));
             m_ShadowResolutionData.Add(asset.mainLightShadowmapResolution);
+            
+            shadowData.mainLightShadowCascadesSplit = new Vector3(0.067f, 0.2f, 0.467f);
             //.................Shadow Settings.................
             shadowData.supportsMainLightShadows = isShadowOn;
             shadowData.bias = m_ShadowBiasData;

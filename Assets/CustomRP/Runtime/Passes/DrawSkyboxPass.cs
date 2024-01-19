@@ -8,6 +8,9 @@ namespace CustomRenderPipeline
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
             ref CameraData cameraData = ref renderingData.cameraData;
+            ref CommandBuffer cmd = ref renderingData.commandBuffer;
+
+            //cmd.SetRenderTarget();
             context.DrawSkybox(renderingData.cameraData.camera);
         }
         

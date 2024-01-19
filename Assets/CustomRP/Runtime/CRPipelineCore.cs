@@ -42,6 +42,8 @@ namespace CustomRenderPipeline
     }
     internal static class GlobaName
     {
+        public static readonly string colorRTName = "_MainColorRT";
+        public static readonly string depthRTName = "_CameraDepthAttachment";
         public static readonly string shadowMapName = "_MainLightShadowmapTexture";
     }
 

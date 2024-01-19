@@ -63,6 +63,16 @@ namespace CustomRenderPipeline
             RenderTargetIdentifier colorBuffer = m_CameraColorTarget.nameID;
             RenderTargetIdentifier depthBuffer = m_CameraDepthTarget.nameID;
             cmd.SetRenderTarget(colorBuffer, depthBuffer, 0, CubemapFace.Unknown, -1);
+            
+            /*var colorBuffer = new RenderTargetIdentifier(
+                m_ColorTargetIndentifiers.nameID, 0, CubemapFace.Unknown, -1);
+            /*var depthBuffer = new RenderTargetIdentifier(m_DepthTargetIndentifiers.nameID,
+                0, CubemapFace.Unknown, -1);#1#
+            cmd.SetRenderTarget(colorBuffer, RenderBufferLoadAction.Load,
+                RenderBufferStoreAction.Store, new RenderTargetIdentifier(), 
+                RenderBufferLoadAction.DontCare
+                , RenderBufferStoreAction.DontCare);*/
+            
             context.ExecuteCommandBuffer(cmd);
             cmd.Clear();
             //.................Setp 2 Execute Pass..........................

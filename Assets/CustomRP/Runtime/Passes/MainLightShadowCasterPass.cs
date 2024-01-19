@@ -79,7 +79,7 @@ namespace CustomRenderPipeline
                 cullResults,mainLightIndex, BatchCullingProjectionType.Orthographic);
             
             cmd.SetRenderTarget(m_MainLightShadowmapTexture.rt);
-            cmd.ClearRenderTarget(true, false, Color.black); // 清空 RenderTexture
+            cmd.ClearRenderTarget(RTClearFlags.All, Color.black, 1.0f, 0x00);
             context.ExecuteCommandBuffer(cmd);
             cmd.Clear();
             for (int i = 0; i < renderingData.shadowData.mainLightShadowCascadesCount; i++)

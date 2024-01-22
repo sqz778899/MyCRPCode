@@ -63,7 +63,13 @@ namespace CustomRenderPipeline
             // Apply shadow slice scale and offset
             shadowSliceData.shadowTransform = sliceTransform * shadowSliceData.shadowTransform;
         }
-        
+
+        void CreateRT(ref RenderingData renderingData)
+        {
+            CommandBuffer cmd = renderingData.commandBuffer;
+            cmd.SetRenderTarget(m_MainLightShadowmapTexture.rt);
+            cmd.ClearRenderTarget(RTClearFlags.All, Color.black, 1.0f, 0x00);
+        }
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
             ref CullingResults cullResults = ref renderingData.cullResults;
@@ -78,10 +84,7 @@ namespace CustomRenderPipeline
             ShadowDrawingSettings settings = new ShadowDrawingSettings(
                 cullResults,mainLightIndex, BatchCullingProjectionType.Orthographic);
             
-            cmd.SetRenderTarget(m_MainLightShadowmapTexture.rt);
-            cmd.ClearRenderTarget(RTClearFlags.All, Color.black, 1.0f, 0x00);
-            context.ExecuteCommandBuffer(cmd);
-            cmd.Clear();
+            CreateRT(ref renderingData);
             for (int i = 0; i < renderingData.shadowData.mainLightShadowCascadesCount; i++)
             {
                 Vector4 shadowBias = ShadowUtils.GetShadowBias(ref shadowLight, lightData.mainLightIndex, 

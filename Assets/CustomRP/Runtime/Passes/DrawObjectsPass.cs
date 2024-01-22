@@ -7,8 +7,8 @@ namespace CustomRenderPipeline
 {
     public class DrawObjectsPass : ScriptableRenderPass
     {
-        RTHandle m_ColorTargetIndentifiers;
-        RTHandle m_DepthTargetIndentifiers;
+        public RTHandle m_ColorTargetIndentifiers;
+        public RTHandle m_DepthTargetIndentifiers;
         
         static readonly int s_DrawObjectPassDataPropID = Shader.PropertyToID("_DrawObjectPassData");
         //"LightMode" = "CustomLit"
@@ -26,6 +26,7 @@ namespace CustomRenderPipeline
         void CreateRT(ref RenderingData renderingData)
         {
             ref Camera camera = ref renderingData.cameraData.camera;
+            CommandBuffer cmd = renderingData.commandBuffer;
             //Color
             RenderTextureDescriptor colorRTD = new RenderTextureDescriptor(
                 camera.pixelWidth, camera.pixelHeight,
@@ -35,21 +36,25 @@ namespace CustomRenderPipeline
             m_ColorTargetIndentifiers = RTHandles.Alloc(colorRTD, FilterMode.Bilinear,
                 TextureWrapMode.Clamp,name: GlobaName.colorRTName);
             //Depth
-            /*RenderTextureDescriptor depthRTD = new RenderTextureDescriptor(
+            RenderTextureDescriptor depthRTD = new RenderTextureDescriptor(
                 camera.pixelWidth, camera.pixelHeight,
                 GraphicsFormat.D32_SFloat_S8_UInt, GraphicsFormat.D32_SFloat);
             m_DepthTargetIndentifiers?.Release();
             m_DepthTargetIndentifiers = RTHandles.Alloc(depthRTD, FilterMode.Point,
-                TextureWrapMode.Clamp, name: GlobaName.depthRTName);*/
-            //GraphicsFormat.D32_SFloat_S8_UInt;
+                TextureWrapMode.Clamp, name: GlobaName.depthRTName);
+            //SetRTAndClear
+            cmd.SetRenderTarget(m_ColorTargetIndentifiers, 
+                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store, 
+                m_DepthTargetIndentifiers, 
+                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+            cmd.ClearRenderTarget(RTClearFlags.DepthStencil,camera.backgroundColor, 1.0f, 0x00);
         }
 
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
             ref CameraData cameraData = ref renderingData.cameraData;
-            CreateRT(ref renderingData);
             CommandBuffer cmd = renderingData.commandBuffer;
-            cmd.ClearRenderTarget(RTClearFlags.DepthStencil,cameraData.camera.backgroundColor, 1.0f, 0x00);
+            CreateRT(ref renderingData);
             cmd.SetViewProjectionMatrices(cameraData.camera.worldToCameraMatrix, cameraData.camera.projectionMatrix); // 恢复矩阵
             context.ExecuteCommandBuffer(cmd);
             cmd.Clear();

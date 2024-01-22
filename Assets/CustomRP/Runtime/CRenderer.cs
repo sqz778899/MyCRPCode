@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEditor.VersionControl;
+using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
@@ -49,7 +50,7 @@ namespace CustomRenderPipeline
             m_RenderOpaqueForwardPass = new DrawObjectsPass(RenderPassEvent.BeforeRenderingOpaques);
             m_MainLightShadowCasterPass = new MainLightShadowCasterPass(RenderPassEvent.BeforeRenderingShadows);
             m_DrawSkyboxPass = new DrawSkyboxPass(RenderPassEvent.BeforeRenderingSkybox);
-            m_FinalBlitPass = new FinalBlitPass(RenderPassEvent.AfterRendering);
+            m_FinalBlitPass = new FinalBlitPass(RenderPassEvent.AfterRendering,new Material(""){hideFlags = HideFlags.HideAndDontSave});
         }
     }
 }

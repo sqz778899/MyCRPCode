@@ -7,6 +7,10 @@ namespace CustomRenderPipeline
 {
     public abstract class ScriptableRenderer: IDisposable
     {
+        public RTHandle cameraColorTargetHandle
+        {
+            get { return m_CameraColorTarget.handle; }
+        }
         RTHandleRenderTargetIdentifierCompat m_CameraColorTarget;
         RTHandleRenderTargetIdentifierCompat m_CameraDepthTarget;
         bool m_FirstTimeCameraColorTargetIsBound = true;  //记录是不是第一次绑定，是的话要去清理GPU各种状态内存啥的
@@ -60,27 +64,18 @@ namespace CustomRenderPipeline
             ref CameraData cameraData = ref renderingData.cameraData;
             CommandBuffer cmd = renderingData.commandBuffer;
             //.................Setp 1 Set Camera Target..........................
-            RenderTargetIdentifier colorBuffer = m_CameraColorTarget.nameID;
-            RenderTargetIdentifier depthBuffer = m_CameraDepthTarget.nameID;
-            cmd.SetRenderTarget(colorBuffer, depthBuffer, 0, CubemapFace.Unknown, -1);
+            SetRenderPassAttachments(cmd, renderPass, ref cameraData);//综合管控各个Pass的RT，不然各个Pass不能相互配合，拿到各种中间信息
             
-            /*var colorBuffer = new RenderTargetIdentifier(
-                m_ColorTargetIndentifiers.nameID, 0, CubemapFace.Unknown, -1);
-            /*var depthBuffer = new RenderTargetIdentifier(m_DepthTargetIndentifiers.nameID,
-                0, CubemapFace.Unknown, -1);#1#
-            cmd.SetRenderTarget(colorBuffer, RenderBufferLoadAction.Load,
-                RenderBufferStoreAction.Store, new RenderTargetIdentifier(), 
-                RenderBufferLoadAction.DontCare
-                , RenderBufferStoreAction.DontCare);*/
-            
-            context.ExecuteCommandBuffer(cmd);
-            cmd.Clear();
             //.................Setp 2 Execute Pass..........................
             renderPass.Execute(context, ref renderingData);
             context.ExecuteCommandBuffer(cmd);
             cmd.Clear();
         }
-        
+
+        void SetRenderPassAttachments(CommandBuffer cmd, ScriptableRenderPass renderPass, ref CameraData cameraData)
+        {
+            
+        }
         
         //手动GC
         public void Dispose()

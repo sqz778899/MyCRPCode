@@ -7,8 +7,8 @@ namespace CustomRenderPipeline
 {
     public class DrawObjectsPass : ScriptableRenderPass
     {
-        public RTHandle m_ColorTargetIndentifiers;
-        public RTHandle m_DepthTargetIndentifiers;
+        RTHandle m_ColorTargetIndentifiers;
+        RTHandle m_DepthTargetIndentifiers;
         
         static readonly int s_DrawObjectPassDataPropID = Shader.PropertyToID("_DrawObjectPassData");
         //"LightMode" = "CustomLit"
@@ -48,6 +48,9 @@ namespace CustomRenderPipeline
                 m_DepthTargetIndentifiers, 
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
             cmd.ClearRenderTarget(RTClearFlags.DepthStencil,camera.backgroundColor, 1.0f, 0x00);
+
+            colorAttachmentHandle = m_ColorTargetIndentifiers;
+            depthAttachmentHandle = m_DepthTargetIndentifiers;
         }
 
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)

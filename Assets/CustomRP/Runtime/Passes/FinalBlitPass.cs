@@ -5,6 +5,7 @@ namespace CustomRenderPipeline
 {
     public class FinalBlitPass : ScriptableRenderPass
     {
+        RTHandle m_source;
         Material m_BlitMaterial;
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
@@ -18,7 +19,12 @@ namespace CustomRenderPipeline
             //用这个HDR空间的RT作为源图，往屏幕上画
             //RTHandle source = renderingData.cameraData.renderer.cameraColorTargetHandle;
             //
-            //Blitter.BlitTexture(cmd,source, Vector2.one, m_BlitMaterial, 0);
+            Blitter.BlitTexture(cmd,m_source,Vector2.one, m_BlitMaterial, 0);
+        }
+
+        internal void Setup(RTHandle CameraRT)
+        {
+            m_source = CameraRT;
         }
         
         public FinalBlitPass(RenderPassEvent evt,Material blitMaterial)

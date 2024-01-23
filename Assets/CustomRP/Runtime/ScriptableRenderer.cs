@@ -7,14 +7,8 @@ namespace CustomRenderPipeline
 {
     public abstract class ScriptableRenderer: IDisposable
     {
-        public RTHandle cameraColorTargetHandle
-        {
-            get { return m_CameraColorTarget.handle; }
-        }
-        RTHandleRenderTargetIdentifierCompat m_CameraColorTarget;
-        RTHandleRenderTargetIdentifierCompat m_CameraDepthTarget;
-        bool m_FirstTimeCameraColorTargetIsBound = true;  //记录是不是第一次绑定，是的话要去清理GPU各种状态内存啥的
-        bool m_FirstTimeCameraDepthTargetIsBound = true;
+        internal RTHandleRenderTargetIdentifierCompat m_CameraColorTarget;
+        internal RTHandleRenderTargetIdentifierCompat m_CameraDepthTarget;
         
         List<ScriptableRenderPass> m_ActiveRenderPassQueue = new List<ScriptableRenderPass>(32);
         
@@ -41,11 +35,7 @@ namespace CustomRenderPipeline
 
         public virtual void SetupLights(ScriptableRenderContext context, ref RenderingData renderingData) {}
         public void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
-        {  
-            ref CameraData cameraData = ref renderingData.cameraData;
-            CommandBuffer cmd = CommandBufferPool.Get();
-            foreach (var pass in m_ActiveRenderPassQueue)
-                pass.Configure(cmd, cameraData.cameraTargetDescriptor);
+        {
             //.................Setp 1 SetLight..........................
             SetupLights(context, ref renderingData);
             //.................Setp 2 Set Camera..........................
@@ -61,10 +51,9 @@ namespace CustomRenderPipeline
 
         void ExecuteRenderPass(ScriptableRenderContext context,ScriptableRenderPass renderPass,ref RenderingData renderingData)
         {
-            ref CameraData cameraData = ref renderingData.cameraData;
             CommandBuffer cmd = renderingData.commandBuffer;
             //.................Setp 1 Set Camera Target..........................
-            SetRenderPassAttachments(cmd, renderPass, ref cameraData);//综合管控各个Pass的RT，不然各个Pass不能相互配合，拿到各种中间信息
+            SetRenderPassAttachments(renderPass);//综合管控各个Pass的RT，不然各个Pass不能相互配合，拿到各种中间信息
             
             //.................Setp 2 Execute Pass..........................
             renderPass.Execute(context, ref renderingData);
@@ -72,11 +61,23 @@ namespace CustomRenderPipeline
             cmd.Clear();
         }
 
-        void SetRenderPassAttachments(CommandBuffer cmd, ScriptableRenderPass renderPass, ref CameraData cameraData)
+        void SetRenderPassAttachments(ScriptableRenderPass renderPass)
         {
-            
+            if (renderPass.colorAttachmentHandle != null)
+            {
+                m_CameraColorTarget = new RTHandleRenderTargetIdentifierCompat
+                { handle = renderPass.colorAttachmentHandle,
+                    fallback = BuiltinRenderTextureType.CameraTarget };
+            }
+
+            if (renderPass.depthAttachmentHandle != null)
+            {
+                m_CameraDepthTarget = new RTHandleRenderTargetIdentifierCompat
+                { handle = renderPass.depthAttachmentHandle,
+                    fallback = BuiltinRenderTextureType.CameraTarget };
+            }
         }
-        
+
         //手动GC
         public void Dispose()
         {

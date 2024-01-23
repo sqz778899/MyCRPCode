@@ -36,8 +36,10 @@ namespace CustomRenderPipeline
             EnqueuePass(m_MainLightShadowCasterPass);
             EnqueuePass(m_RenderOpaqueForwardPass);
             EnqueuePass(m_DrawSkyboxPass);
+            m_FinalBlitPass.Setup(m_CameraColorTarget.handle);
             EnqueuePass(m_FinalBlitPass);
         }
+        
 
         public override void SetupLights(ScriptableRenderContext context, ref RenderingData renderingData)
         {
@@ -50,7 +52,8 @@ namespace CustomRenderPipeline
             m_RenderOpaqueForwardPass = new DrawObjectsPass(RenderPassEvent.BeforeRenderingOpaques);
             m_MainLightShadowCasterPass = new MainLightShadowCasterPass(RenderPassEvent.BeforeRenderingShadows);
             m_DrawSkyboxPass = new DrawSkyboxPass(RenderPassEvent.BeforeRenderingSkybox);
-            m_FinalBlitPass = new FinalBlitPass(RenderPassEvent.AfterRendering,new Material(""){hideFlags = HideFlags.HideAndDontSave});
+            m_FinalBlitPass = new FinalBlitPass(RenderPassEvent.AfterRendering,new Material(
+                Shader.Find("CRPipline/FinalBlit")){hideFlags = HideFlags.HideAndDontSave});
         }
     }
 }

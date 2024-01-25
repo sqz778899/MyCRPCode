@@ -7,14 +7,18 @@ Shader "CRPipline/FinalBlit"
     }
     SubShader
     {
-        Tags{"LightMode" = "CustomLit"}
+
 
         Pass
         {
+            ZClip True
+            ZTest Always
+            ZWrite Off
+            Cull Off
             HLSLPROGRAM
                 #pragma target 2.0
                 #pragma vertex Vert
-                #pragma fragment FragColorAndDepth
+                #pragma fragment FragColorOnly
                 #include "Blit.hlsl"
             ENDHLSL
         }

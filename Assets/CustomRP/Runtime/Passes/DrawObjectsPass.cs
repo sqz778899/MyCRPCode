@@ -23,36 +23,6 @@ namespace CustomRenderPipeline
             renderPassEvent = evt;
         }
         
-        void CreateRT(ref RenderingData renderingData)
-        {
-            ref Camera camera = ref renderingData.cameraData.camera;
-            CommandBuffer cmd = renderingData.commandBuffer;
-            //Color
-            RenderTextureDescriptor colorRTD = new RenderTextureDescriptor(
-                camera.pixelWidth, camera.pixelHeight,
-              GraphicsFormat.B10G11R11_UFloatPack32, GraphicsFormat.D32_SFloat);
-            colorRTD.depthBufferBits = (int)DepthBits.None;
-            m_ColorTargetIndentifiers?.Release();
-            m_ColorTargetIndentifiers = RTHandles.Alloc(colorRTD, FilterMode.Bilinear,
-                TextureWrapMode.Clamp,name: GlobaName.colorRTName);
-            //Depth
-            RenderTextureDescriptor depthRTD = new RenderTextureDescriptor(
-                camera.pixelWidth, camera.pixelHeight,
-                GraphicsFormat.D32_SFloat_S8_UInt, GraphicsFormat.D32_SFloat);
-            m_DepthTargetIndentifiers?.Release();
-            m_DepthTargetIndentifiers = RTHandles.Alloc(depthRTD, FilterMode.Point,
-                TextureWrapMode.Clamp, name: GlobaName.depthRTName);
-            //SetRTAndClear
-            cmd.SetRenderTarget(m_ColorTargetIndentifiers, 
-                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store, 
-                m_DepthTargetIndentifiers, 
-                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-            cmd.ClearRenderTarget(RTClearFlags.DepthStencil,camera.backgroundColor, 1.0f, 0x00);
-
-            colorAttachmentHandle = m_ColorTargetIndentifiers;
-            depthAttachmentHandle = m_DepthTargetIndentifiers;
-        }
-
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
             ref CameraData cameraData = ref renderingData.cameraData;

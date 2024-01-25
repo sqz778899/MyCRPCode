@@ -31,12 +31,15 @@ namespace CustomRenderPipeline
 
         public override void Setup(ScriptableRenderContext context, ref RenderingData renderingData)
         {
+            CreateCameraRT(ref renderingData);
             m_MainLightShadowCasterPass.Setup(ref renderingData);
             
             EnqueuePass(m_MainLightShadowCasterPass);
+            m_RenderOpaqueForwardPass.colorAttachmentHandle = m_CameraColorRTH;
+            m_RenderOpaqueForwardPass.depthAttachmentHandle = m_CameraDepthRTH;
             EnqueuePass(m_RenderOpaqueForwardPass);
             EnqueuePass(m_DrawSkyboxPass);
-            m_FinalBlitPass.Setup(m_CameraColorTarget.handle);
+            m_FinalBlitPass.Setup(m_CameraColorRTH);
             EnqueuePass(m_FinalBlitPass);
         }
         

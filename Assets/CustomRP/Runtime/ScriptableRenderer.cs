@@ -1,31 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
 namespace CustomRenderPipeline
 {
     public abstract class ScriptableRenderer: IDisposable
     {
-        internal RTHandleRenderTargetIdentifierCompat m_CameraColorTarget;
-        internal RTHandleRenderTargetIdentifierCompat m_CameraDepthTarget;
+        internal RTHandle m_CameraColorRTH;
+        internal RTHandle m_CameraDepthRTH;
         
         List<ScriptableRenderPass> m_ActiveRenderPassQueue = new List<ScriptableRenderPass>(32);
         
         public abstract void Setup(ScriptableRenderContext context, ref RenderingData renderingData);
         
-        internal struct RTHandleRenderTargetIdentifierCompat
-        {
-            public RTHandle handle;
-            public RenderTargetIdentifier fallback;
-            public bool useRTHandle => handle != null;
-            public RenderTargetIdentifier nameID => useRTHandle ? new RenderTargetIdentifier(handle.nameID, 0, CubemapFace.Unknown, -1) : fallback;
-        }
-        
         internal void Clear()
         {
-            m_CameraColorTarget = new RTHandleRenderTargetIdentifierCompat { fallback = BuiltinRenderTextureType.CameraTarget };
-            m_CameraDepthTarget = new RTHandleRenderTargetIdentifierCompat { fallback = BuiltinRenderTextureType.CameraTarget };
         }
 
         public void EnqueuePass(ScriptableRenderPass pass)
@@ -53,29 +44,10 @@ namespace CustomRenderPipeline
         {
             CommandBuffer cmd = renderingData.commandBuffer;
             //.................Setp 1 Set Camera Target..........................
-            SetRenderPassAttachments(renderPass);//综合管控各个Pass的RT，不然各个Pass不能相互配合，拿到各种中间信息
-            
             //.................Setp 2 Execute Pass..........................
             renderPass.Execute(context, ref renderingData);
             context.ExecuteCommandBuffer(cmd);
             cmd.Clear();
-        }
-
-        void SetRenderPassAttachments(ScriptableRenderPass renderPass)
-        {
-            if (renderPass.colorAttachmentHandle != null)
-            {
-                m_CameraColorTarget = new RTHandleRenderTargetIdentifierCompat
-                { handle = renderPass.colorAttachmentHandle,
-                    fallback = BuiltinRenderTextureType.CameraTarget };
-            }
-
-            if (renderPass.depthAttachmentHandle != null)
-            {
-                m_CameraDepthTarget = new RTHandleRenderTargetIdentifierCompat
-                { handle = renderPass.depthAttachmentHandle,
-                    fallback = BuiltinRenderTextureType.CameraTarget };
-            }
         }
 
         //手动GC
@@ -86,7 +58,34 @@ namespace CustomRenderPipeline
         
         public ScriptableRenderer(ScriptableRenderData data)
         {
-            //Clear(CameraRenderType.Base);
+            
+        }
+        
+        internal void CreateCameraRT(ref RenderingData renderingData)
+        {
+            ref Camera camera = ref renderingData.cameraData.camera;
+            CommandBuffer cmd = renderingData.commandBuffer;
+            //Color
+            RenderTextureDescriptor colorRTD = new RenderTextureDescriptor(
+                camera.pixelWidth, camera.pixelHeight,
+                GraphicsFormat.B10G11R11_UFloatPack32, GraphicsFormat.D32_SFloat);
+            colorRTD.depthBufferBits = (int)DepthBits.None;
+            m_CameraColorRTH?.Release();
+            m_CameraColorRTH = RTHandles.Alloc(colorRTD, FilterMode.Bilinear,
+                TextureWrapMode.Clamp,name: GlobaName.colorRTName);
+            //Depth
+            RenderTextureDescriptor depthRTD = new RenderTextureDescriptor(
+                camera.pixelWidth, camera.pixelHeight,
+                GraphicsFormat.D32_SFloat_S8_UInt, GraphicsFormat.D32_SFloat);
+            m_CameraDepthRTH?.Release();
+            m_CameraDepthRTH = RTHandles.Alloc(depthRTD, FilterMode.Point,
+                TextureWrapMode.Clamp, name: GlobaName.depthRTName);
+            //SetRTAndClear
+            cmd.SetRenderTarget(m_CameraColorRTH, 
+                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store, 
+                m_CameraDepthRTH, 
+                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+            cmd.ClearRenderTarget(RTClearFlags.DepthStencil,camera.backgroundColor, 1.0f, 0x00);
         }
     }
 }

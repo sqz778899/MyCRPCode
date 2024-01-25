@@ -56,8 +56,14 @@ namespace CustomRenderPipeline
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
             ref CameraData cameraData = ref renderingData.cameraData;
+            ref Camera camera = ref cameraData.camera;
             CommandBuffer cmd = renderingData.commandBuffer;
-            CreateRT(ref renderingData);
+           
+            cmd.SetRenderTarget(colorAttachmentHandle, 
+                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store, 
+                depthAttachmentHandle, 
+                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+            cmd.ClearRenderTarget(RTClearFlags.DepthStencil,camera.backgroundColor, 1.0f, 0x00);
             cmd.SetViewProjectionMatrices(cameraData.camera.worldToCameraMatrix, cameraData.camera.projectionMatrix); // 恢复矩阵
             context.ExecuteCommandBuffer(cmd);
             cmd.Clear();

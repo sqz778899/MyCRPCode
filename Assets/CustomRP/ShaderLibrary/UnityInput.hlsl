@@ -8,6 +8,19 @@ CBUFFER_START(UnityPerDraw)
     float4 unity_LODFade; // x is the fade value ranging within [0,1]. y is x quantized into 16 levels
     float4 unity_WorldTransformParams; // w is usually 1.0, or -1.0 for odd-negative scale transforms
     float4 unity_RenderingLayer;
+
+    // SH block feature
+    real4 unity_SHAr;
+    real4 unity_SHAg;
+    real4 unity_SHAb;
+    real4 unity_SHBr;
+    real4 unity_SHBg;
+    real4 unity_SHBb;
+    real4 unity_SHC;
+
+    // Velocity
+    float4x4 unity_MatrixPreviousM;
+    float4x4 unity_MatrixPreviousMI;
 CBUFFER_END
 
 //...................................
@@ -18,12 +31,6 @@ float4x4 unity_MatrixInvP;
 float4x4 unity_MatrixVP;
 float4x4 unity_MatrixInvVP;
 float4x4 glstate_matrix_projection;
-
-float4x4 unity_prev_MatrixM;
-float4x4 unity_prev_MatrixIM;
-
-float4x4 unity_MatrixPreviousM;
-float4x4 unity_MatrixPreviousMI;
 
 float3 _WorldSpaceCameraPos;
 

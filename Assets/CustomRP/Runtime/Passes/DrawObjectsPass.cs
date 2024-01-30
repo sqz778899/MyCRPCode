@@ -46,7 +46,10 @@ namespace CustomRenderPipeline
             //.................Setp 2 Draw Renderer..........................
             SortingSettings sortingSettings = new SortingSettings(cameraData.camera);
             DrawingSettings drawingSettings = new DrawingSettings(
-                shaderTagIds[0], sortingSettings);
+                shaderTagIds[0], sortingSettings)
+            {
+                perObjectData = PerObjectData.LightProbe
+            };
             for (int i = 1; i < shaderTagIds.Length; i++)
                 drawingSettings.SetShaderPassName(i, shaderTagIds[i]);
             FilteringSettings filterSettings = new FilteringSettings(RenderQueueRange.opaque);

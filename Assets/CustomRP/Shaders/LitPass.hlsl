@@ -30,6 +30,7 @@ struct Varyings
 //...........................
 void InitInputData(Varyings input, half3 normalTS, out InputData inputData)
 {
+    
     inputData = (InputData)0;
     inputData.positionWS = input.positionWS;
     inputData.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
@@ -40,11 +41,12 @@ void InitInputData(Varyings input, half3 normalTS, out InputData inputData)
     half3x3 tangentToWorld = half3x3(input.tangentWS.xyz, bitangent.xyz, input.normalWS.xyz);
     inputData.tangentToWorld = tangentToWorld;
     inputData.normalWS = TransformTangentToWorld(normalTS, tangentToWorld);
-
+    
     //................Shadow.....................
     inputData.shadowCoord = TransformWorldToShadowCoord(input.positionWS);
 
     //....................SH.....................
+    inputData.bakedGI = SampleSH(input.normalWS);
     //SAMPLE_GI(input.positionWS, inputData.vertexSH);
 }
 //..........................Vertex Shader.............................................
@@ -115,7 +117,7 @@ half4 LitPassFragment(Varyings input): SV_Target
     float3 specular =  pow(max(0, dot(R, V)), 50);
    
     half3 Color = _MainLightColor.rgb * NOL * light.shadowAttenuation + specular;
-    
-    return half4(Color, 1);
+   
+    return half4(Color * inputData.bakedGI, 1);
 }
 #endif

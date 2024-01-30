@@ -7,8 +7,6 @@ Shader "CRPipline/FinalBlit"
     }
     SubShader
     {
-
-
         Pass
         {
             ZClip True

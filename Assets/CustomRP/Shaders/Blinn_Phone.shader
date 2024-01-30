@@ -1,12 +1,10 @@
-Shader "CRPipline/Lit"
+Shader "CRPipline/Blinn_Phone"
 {
     Properties
     {
-        _BaseMap ("Albedo", 2D) = "white" {}
-        _BaseColor ("Base Color", Color) = (1,1,1,1)
-        _BumpMap ("Normal Map", 2D) = "white" {}
-        _BumpScale ("Normal Scale", Float) = 1.0
-        _RMOEMap ("RMOE Map", 2D) = "white" {}
+        _Color ("Color", Color) = (1,1,1,1)
+        _Gloss("Gloss",Float) = 10
+        _MainTex ("Texture", 2D) = "white" {}
     }
     SubShader
     {
@@ -22,9 +20,6 @@ Shader "CRPipline/Lit"
             }
             HLSLPROGRAM
             #pragma target 2.0
-            //#pragma vertex vert
-            //#pragma fragment frag
-            // make fog work
             #pragma multi_compile_fog
 
             // GPU Instancing
@@ -32,7 +27,7 @@ Shader "CRPipline/Lit"
             
             #include "./LitPass.hlsl"
             #pragma vertex LitPassVertex
-            #pragma fragment LitPassFragment
+            #pragma fragment BlinnPhonePassFragment
             ENDHLSL
         }
         Pass

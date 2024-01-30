@@ -1,5 +1,8 @@
 #ifndef CUSTOM_INPUT_INCLUDED
 #define CUSTOM_INPUT_INCLUDED
+
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonMaterial.hlsl"
 #include "./UnityInput.hlsl"
 #define UNITY_MATRIX_M     unity_ObjectToWorld
 #define UNITY_MATRIX_I_M   unity_WorldToObject
@@ -15,6 +18,25 @@
 #define UNITY_MATRIX_MVP   mul(UNITY_MATRIX_VP, UNITY_MATRIX_M)
 #define UNITY_PREV_MATRIX_M   unity_MatrixPreviousM
 #define UNITY_PREV_MATRIX_I_M unity_MatrixPreviousMI
+
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
+
+//...............................................
+struct InputData
+{
+    float3  positionWS;
+    float4  positionCS;
+    float3  normalWS;
+    half3   viewDirectionWS;
+    float4  shadowCoord;
+    half    fogCoord;
+    half3   vertexLighting;
+    half3   bakedGI;
+    float2  normalizedScreenSpaceUV;
+    half4   shadowMask;
+    half3x3 tangentToWorld;
+};
 ///////////////////////////////////////////////////////////////////////////////
 //                      Constant Buffers                                     //
 ///////////////////////////////////////////////////////////////////////////////

@@ -1,11 +1,9 @@
 #ifndef CUSTOM_LIT_PASS_INCLUDED
 #define CUSTOM_LIT_PASS_INCLUDED
-#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
+
 #include "../ShaderLibrary/Core.hlsl"
 #include "../ShaderLibrary/RealtimeLights.hlsl"
-//#include "../ShaderLibrary/ShaderVariablesFunctions.hlsl"
 #include "./LitInput.hlsl"
-
 
 struct Attributes
 {
@@ -29,7 +27,27 @@ struct Varyings
     UNITY_VERTEX_INPUT_INSTANCE_ID
     UNITY_VERTEX_OUTPUT_STEREO
 };
+//...........................
+void InitInputData(Varyings input, half3 normalTS, out InputData inputData)
+{
+    inputData = (InputData)0;
+    inputData.positionWS = input.positionWS;
+    inputData.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
 
+    //................构建TBN矩阵.....................
+    float sgn = input.tangentWS.w;      // should be either +1 or -1
+    float3 bitangent = sgn * cross(input.normalWS.xyz, input.tangentWS.xyz);
+    half3x3 tangentToWorld = half3x3(input.tangentWS.xyz, bitangent.xyz, input.normalWS.xyz);
+    inputData.tangentToWorld = tangentToWorld;
+    inputData.normalWS = TransformTangentToWorld(normalTS, tangentToWorld);
+
+    //................Shadow.....................
+    inputData.shadowCoord = TransformWorldToShadowCoord(input.positionWS);
+
+    //....................SH.....................
+    //SAMPLE_GI(input.positionWS, inputData.vertexSH);
+}
+//..........................Vertex Shader.............................................
 Varyings LitPassVertex(Attributes input)
 {
     Varyings output = (Varyings)0;
@@ -47,15 +65,56 @@ Varyings LitPassVertex(Attributes input)
     return output;
 }
 
-
-half4 LitPassFragment(Varyings input): SV_Target
+//..........................Fragment Shader.............................................
+half4 PhonePassFragment(Varyings input): SV_Target
 {
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
     
     Light light = GetMainLight(TransformWorldToShadowCoord(input.positionWS));
     half NOL = saturate(dot(input.normalWS, _MainLightPosition.xyz)) * _MainLightColor;
-    half3 Color = _MainLightColor.rgb * NOL * light.shadowAttenuation;
+    float3 reflectDir = normalize(reflect(_MainLightPosition.xyz * -1, input.normalWS));
+    float3 viewDir = normalize(_WorldSpaceCameraPos - input.positionWS);
+    float3 specular =  pow(max(0, dot(reflectDir, viewDir)), _Gloss);
+   
+    half3 Color = _MainLightColor.rgb * NOL * light.shadowAttenuation + specular;
+    
+    return half4(Color, 1);
+}
+
+half4 BlinnPhonePassFragment(Varyings input): SV_Target
+{
+    UNITY_SETUP_INSTANCE_ID(input);
+    UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+    
+    Light light = GetMainLight(TransformWorldToShadowCoord(input.positionWS));
+    half NOL = saturate(dot(input.normalWS, _MainLightPosition.xyz)) * _MainLightColor;
+    float3 viewDir = normalize(_WorldSpaceCameraPos - input.positionWS);
+    float3 halfDir = normalize(viewDir + _MainLightPosition.xyz);
+    float3 specular = pow(max(0,dot(input.normalWS, halfDir)), _Gloss);
+   
+    half3 Color = _MainLightColor.rgb * NOL * light.shadowAttenuation + specular;
+    
+    return half4(Color, 1);
+}
+
+half4 LitPassFragment(Varyings input): SV_Target
+{
+    UNITY_SETUP_INSTANCE_ID(input);
+    UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+    SurfaceData surfaceData;
+    InitSurfaceData(input.uv,surfaceData);
+
+    InputData inputData;
+    InitInputData(input, surfaceData.normalTS, inputData);
+    
+    Light light = GetMainLight(TransformWorldToShadowCoord(input.positionWS));
+    half NOL = saturate(dot(input.normalWS, _MainLightPosition.xyz)) * _MainLightColor;
+    float3 R = reflect(_MainLightPosition.xyz * -1, input.normalWS);
+    float3 V = normalize(_WorldSpaceCameraPos - input.positionWS);
+    float3 specular =  pow(max(0, dot(R, V)), 50);
+   
+    half3 Color = _MainLightColor.rgb * NOL * light.shadowAttenuation + specular;
     
     return half4(Color, 1);
 }

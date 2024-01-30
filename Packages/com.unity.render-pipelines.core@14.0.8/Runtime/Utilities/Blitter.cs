@@ -259,8 +259,6 @@ namespace UnityEngine.Rendering
         {
             s_PropertyBlock.SetVector(BlitShaderIDs._BlitScaleBias, scaleBias);
             s_PropertyBlock.SetTexture(BlitShaderIDs._BlitTexture, source);
-            Debug.Log(source.rt.name);
-            var o = source.rt;
             DrawTriangle(cmd, material, pass);
         }
         

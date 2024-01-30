@@ -6,6 +6,7 @@ namespace CustomRenderPipeline
 {
     public class MainLightShadowCasterPass: ScriptableRenderPass
     {
+        static string m_ProfilerTag = "ShadowCaster";
         const int k_MaxCascades = 4;
         
         internal RTHandle m_MainLightShadowmapTexture;
@@ -77,7 +78,7 @@ namespace CustomRenderPipeline
             int mainLightIndex = lightData.mainLightIndex;
             VisibleLight shadowLight = lightData.visibleLights[mainLightIndex];
             ref CommandBuffer cmd = ref renderingData.commandBuffer;
-
+            cmd.BeginSample(m_ProfilerTag);
             if (shadowLight.light.shadows == LightShadows.None)
                 return;
             
@@ -131,6 +132,7 @@ namespace CustomRenderPipeline
             }
             cmd.SetGlobalMatrixArray(ShaderPropertyId.worldToShadowMatrix, m_MainLightShadowMatrices);
             cmd.SetGlobalTexture(ShaderPropertyId.shadowmapID, m_MainLightShadowmapTexture.nameID);
+            cmd.EndSample(m_ProfilerTag);
         }
 
         #region MyRegion

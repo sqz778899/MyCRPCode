@@ -7,11 +7,12 @@ namespace CustomRenderPipeline
 {
     public class DrawObjectsPass : ScriptableRenderPass
     {
+        static string m_ProfilerTag = "DrawObjectsPass";
         RTHandle m_ColorTargetIndentifiers;
         RTHandle m_DepthTargetIndentifiers;
         
         static readonly int s_DrawObjectPassDataPropID = Shader.PropertyToID("_DrawObjectPassData");
-        //"LightMode" = "CustomLit"
+        //"LightMode" = "CustomLit" 
         ShaderTagId[] shaderTagIds = new ShaderTagId[]
         {
             //new ShaderTagId("SRPDefaultUnlit"),
@@ -28,7 +29,7 @@ namespace CustomRenderPipeline
             ref CameraData cameraData = ref renderingData.cameraData;
             ref Camera camera = ref cameraData.camera;
             CommandBuffer cmd = renderingData.commandBuffer;
-           
+            cmd.BeginSample(m_ProfilerTag);
             cmd.SetRenderTarget(colorAttachmentHandle, 
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store, 
                 depthAttachmentHandle, 
@@ -53,7 +54,7 @@ namespace CustomRenderPipeline
                 ref drawingSettings, ref filterSettings);
             context.ExecuteCommandBuffer(cmd);
             cmd.Clear();
-            
+            cmd.EndSample(m_ProfilerTag);
         }
     }
 }

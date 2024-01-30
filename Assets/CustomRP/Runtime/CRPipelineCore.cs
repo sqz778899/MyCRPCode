@@ -10,8 +10,8 @@ namespace CustomRenderPipeline
     {
         public Camera camera;
         public float maxShadowDistance;
-        public ScriptableRenderer renderer;
-        public RenderTextureDescriptor cameraTargetDescriptor;
+        public CameraType cameraType => camera.cameraType;
+        public bool isSceneViewCamera => cameraType == CameraType.SceneView;
     }
 
     public struct LightData

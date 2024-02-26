@@ -5,6 +5,7 @@
 #include "../ShaderLibrary/RealtimeLights.hlsl"
 #include "./LitInput.hlsl"
 
+
 struct Attributes
 {
     float4 positionOS   : POSITION;

@@ -13,7 +13,6 @@ namespace CustomRenderPipeline
 
         public void Setup(ScriptableRenderContext context, ref RenderingData renderingData)
         {
-            Debug.Log("Setup  Lights");
             CommandBuffer cmd = renderingData.commandBuffer;
             SetupMainLightConstants(cmd, ref renderingData.lightData);
             context.ExecuteCommandBuffer(cmd);

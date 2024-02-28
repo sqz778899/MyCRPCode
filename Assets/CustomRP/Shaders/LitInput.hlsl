@@ -20,6 +20,7 @@ float4 _BumpMap_ST;
 float4 _RMOEMap_ST;
 half4 _BaseColor;
 half _BumpScale;
+half _Metallic;
 
 //非常用光照模型：Phone..BlinnPhone..
 half _Gloss;
@@ -44,7 +45,11 @@ void InitSurfaceData(float2 uv, out SurfaceData outSurfaceData)
     outSurfaceData.alpha = alpha;
     outSurfaceData.normalTS = normalTS;
     outSurfaceData.smoothness = (1 - rmoe.r);
+#ifdef _METALLICPARAMETER_ON
+    outSurfaceData.metallic = _Metallic;
+#else
     outSurfaceData.metallic = rmoe.g;
+#endif
     outSurfaceData.occlusion = rmoe.b;
     outSurfaceData.emission = rmoe.a;
 }

@@ -7,6 +7,9 @@ Shader "CRPipline/Lit"
         _BumpMap ("Normal Map", 2D) = "white" {}
         _BumpScale ("Normal Scale", Float) = 1.0
         _RMOEMap ("RMOE Map", 2D) = "white" {}
+        
+        [Toggle]_METALLICPARAMETER("MetallicParameter", int) = 0
+        _Metallic("Metallic",Range(0,1)) = 0
     }
     SubShader
     {
@@ -29,6 +32,9 @@ Shader "CRPipline/Lit"
 
             // GPU Instancing
             #pragma multi_compile_instancing
+
+            //Shader_feature
+            #pragma shader_feature_local_fragment _METALLICPARAMETER_ON
             
             #include "./LitPass.hlsl"
             #pragma vertex LitPassVertex

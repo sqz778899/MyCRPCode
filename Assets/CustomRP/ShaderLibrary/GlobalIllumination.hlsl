@@ -2,6 +2,8 @@
 #define CUSTOM_GLOBAL_ILLUMINATION_INCLUDED
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SphericalHarmonics.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+#include "../ShaderLibrary/SurfaceData.hlsl"
+#include "../ShaderLibrary/BRDFData.hlsl"
 
 half3 SampleSH(half3 normalWS)
 {

@@ -118,8 +118,8 @@ half4 LitPassFragment(Varyings input): SV_Target
     float3 specular =  pow(max(0, dot(R, V)), 50);
    
     half3 Color = _MainLightColor.rgb * NOL * light.shadowAttenuation + specular;
-    
-    return half4(surfaceData.metallic.rrr, 1);
+    half3 Result = CustomFragmentPBR(inputData,surfaceData);
+    //return half4(inputData.shadowMask.rgb, 1);
     return half4(Color * inputData.bakedGI, 1);
 }
 #endif

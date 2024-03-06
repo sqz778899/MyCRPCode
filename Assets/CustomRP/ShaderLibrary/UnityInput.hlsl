@@ -9,6 +9,7 @@ CBUFFER_START(UnityPerDraw)
     float4 unity_WorldTransformParams; // w is usually 1.0, or -1.0 for odd-negative scale transforms
     float4 unity_RenderingLayer;
 
+    float4 unity_ProbesOcclusion;
     // SH block feature
     real4 unity_SHAr;
     real4 unity_SHAg;

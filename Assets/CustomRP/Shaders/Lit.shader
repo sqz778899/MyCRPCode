@@ -4,12 +4,15 @@ Shader "CRPipline/Lit"
     {
         _BaseMap ("Albedo", 2D) = "white" {}
         _BaseColor ("Base Color", Color) = (1,1,1,1)
+        [Toggle]_NORMALMAP("Normal Map On", int) = 0
         _BumpMap ("Normal Map", 2D) = "white" {}
         _BumpScale ("Normal Scale", Float) = 1.0
         _RMOEMap ("RMOE Map", 2D) = "white" {}
         
         [Toggle]_METALLICPARAMETER("MetallicParameter", int) = 0
         _Metallic("Metallic",Range(0,1)) = 0
+        [Toggle]_ROUGHNESSPARAMETER("RoughnessParameter", int) = 0
+        _Roughness("Roughness",Range(0,1)) = 0
     }
     SubShader
     {
@@ -34,7 +37,9 @@ Shader "CRPipline/Lit"
             #pragma multi_compile_instancing
 
             //Shader_feature
+            #pragma shader_feature_local _NORMALMAP_ON
             #pragma shader_feature_local_fragment _METALLICPARAMETER_ON
+            #pragma shader_feature_local_fragment _ROUGHNESSPARAMETER_ON
             
             #include "./LitPass.hlsl"
             #pragma vertex LitPassVertex

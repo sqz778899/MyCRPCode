@@ -1,11 +1,13 @@
 #ifndef CUSTOM_LIT_INPUT_INCLUDED
 #define CUSTOM_LIT_INPUT_INCLUDED
 #include "../ShaderLibrary/SurfaceData.hlsl"
+#include "../ShaderLibrary/Lighting.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Macros.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+
 
 TEXTURE2D(_BaseMap);
 SAMPLER(sampler_BaseMap);
@@ -21,6 +23,7 @@ float4 _RMOEMap_ST;
 half4 _BaseColor;
 half _BumpScale;
 half _Metallic;
+half _Roughness;
 
 //非常用光照模型：Phone..BlinnPhone..
 half _Gloss;
@@ -37,14 +40,23 @@ void InitSurfaceData(float2 uv, out SurfaceData outSurfaceData)
     half4 albedo = SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,SetUVST(uv,_BaseMap_ST)) * half4(_BaseColor.rgb, 1.0);
     half alpha = albedo.a + _BaseColor.a;
     
+    half3 normalTS = half3(0.0h, 0.0h, 1.0h);
+#ifdef _NORMALMAP_ON
     half4 normalmap = SAMPLE_TEXTURE2D(_BumpMap,sampler_BumpMap, SetUVST(uv,_BumpMap_ST));
-    half3 normalTS = UnpackNormalScale(normalmap, _BumpScale);
+    normalTS = UnpackNormalScale(normalmap, _BumpScale);
+ #endif
+  
     half4 rmoe = SAMPLE_TEXTURE2D(_RMOEMap,sampler_RMOEMap,SetUVST(uv,_RMOEMap_ST));
 
     outSurfaceData.albedo = albedo.rgb;
     outSurfaceData.alpha = alpha;
     outSurfaceData.normalTS = normalTS;
+   
+#ifdef _ROUGHNESSPARAMETER_ON
+    outSurfaceData.smoothness = (1 - _Roughness);
+#else
     outSurfaceData.smoothness = (1 - rmoe.r);
+#endif
 #ifdef _METALLICPARAMETER_ON
     outSurfaceData.metallic = _Metallic;
 #else

@@ -4,8 +4,6 @@
 #include "../ShaderLibrary/Core.hlsl"
 #include "../ShaderLibrary/RealtimeLights.hlsl"
 #include "./LitInput.hlsl"
-#include "../ShaderLibrary/BRDF.hlsl"
-#include "../ShaderLibrary/SurfaceData.hlsl"
 
 struct Attributes
 {
@@ -32,6 +30,7 @@ struct Varyings
 //...........................
 void InitInputData(Varyings input, half3 normalTS, out InputData inputData)
 {
+    
     inputData = (InputData)0;
     inputData.positionWS = input.positionWS;
     inputData.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
@@ -49,8 +48,6 @@ void InitInputData(Varyings input, half3 normalTS, out InputData inputData)
     //....................SH.....................
     inputData.bakedGI = SampleSH(input.normalWS);
     //SAMPLE_GI(input.positionWS, inputData.vertexSH);
-    //..................ScreenSpaceUV.............
-    inputData.normalizedScreenSpaceUV = input.positionCS.xy * rcp(_ScaledScreenParams.xy);
 }
 //..........................Vertex Shader.............................................
 Varyings LitPassVertex(Attributes input)
@@ -62,11 +59,8 @@ Varyings LitPassVertex(Attributes input)
     //VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS);
     //VertexNormalInputs normalInput = GetVertexNormalInputs(input.normalOS, input.tangentOS);
     output.uv = TRANSFORM_TEX(input.texcoord, _BaseMap);
-    //.........................Normal..........................................
-    real sign = real(input.tangentOS.w) * GetOddNegativeScale();
-    output.normalWS = TransformObjectToWorldNormal(input.normalOS);
-    output.tangentWS =  half4(TransformObjectToWorldDir(input.tangentOS.xyz),sign);
-    //.........................VertexPosition..........................................
+    output.normalWS = SafeNormalize(mul(input.normalOS, (float3x3)UNITY_MATRIX_I_M));
+    output.tangentWS = half4(SafeNormalize(float3(mul((float3x3)UNITY_MATRIX_M, input.tangentOS.xyz))),1);
     half4 worldPos = mul(unity_ObjectToWorld, float4(input.positionOS.xyz, 1.0));
     output.positionWS = worldPos.xyz;
     output.positionCS = mul(UNITY_MATRIX_VP, worldPos);
@@ -115,14 +109,8 @@ half4 LitPassFragment(Varyings input): SV_Target
 
     InputData inputData;
     InitInputData(input, surfaceData.normalTS, inputData);
-
-    BRDFData brdfData;
-    InitializeBRDFData(surfaceData, brdfData);
     
     Light light = GetMainLight(TransformWorldToShadowCoord(input.positionWS));
-
-    half3 giColor = GlobalIllumination(brdfData,inputData.bakedGI,surfaceData.occlusion,
-        inputData.normalWS,inputData.viewDirectionWS);
     half NOL = saturate(dot(input.normalWS, _MainLightPosition.xyz)) * _MainLightColor;
     float3 R = reflect(_MainLightPosition.xyz * -1, input.normalWS);
     float3 V = normalize(_WorldSpaceCameraPos - input.positionWS);
@@ -130,6 +118,6 @@ half4 LitPassFragment(Varyings input): SV_Target
    
     half3 Color = _MainLightColor.rgb * NOL * light.shadowAttenuation + specular;
    
-    return half4(giColor, 1);
+    return half4(Color * inputData.bakedGI, 1);
 }
 #endif

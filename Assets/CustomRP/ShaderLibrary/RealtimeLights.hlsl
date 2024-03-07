@@ -26,4 +26,10 @@ Light GetMainLight(float4 shadowCoord)
     return light;
 }
 
+half4 CalculateShadowMask(InputData inputData)
+{
+    half4 shadowMask = half4(1, 1, 1, 1);
+
+    return shadowMask;
+}
 #endif

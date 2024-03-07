@@ -39,7 +39,7 @@ void InitSurfaceData(float2 uv, out SurfaceData outSurfaceData)
     outSurfaceData.albedo = albedo.rgb;
     outSurfaceData.alpha = alpha;
     outSurfaceData.normalTS = normalTS;
-    outSurfaceData.roughness = rmoe.r;
+    outSurfaceData.smoothness = (1 - rmoe.r);
     outSurfaceData.metallic = rmoe.g;
     outSurfaceData.occlusion = rmoe.b;
     outSurfaceData.emission = rmoe.a;

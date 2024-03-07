@@ -1,8 +1,6 @@
 #ifndef CUSTOM_SHADOW_CASTER_PASS_INCLUDED
 #define CUSTOM_SHADOW_CASTER_PASS_INCLUDED
-#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 #include "../ShaderLibrary/Core.hlsl"
-//#include "../ShaderLibrary/ShaderVariablesFunctions.hlsl"
 #include "./LitInput.hlsl"
 
 float3 _LightDirection;

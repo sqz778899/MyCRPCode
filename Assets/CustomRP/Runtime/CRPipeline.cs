@@ -38,7 +38,7 @@ namespace CustomRenderPipeline
             
             //Step3.........搞到最重要的CullingResults，得到了裁剪的结果
             var cullResults = context.Cull(ref cullingParams);
-            
+
             //Step4.........把渲染所需要的所有东西，用RenderingData这个结构体塞进去
             InitializeRenderingData(ref cullResults,ref cameraData,cmd, out var renderingData);
             //Step5.........把各个Pass装配，执行，提交，一条龙绘制出来

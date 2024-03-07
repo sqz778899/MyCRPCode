@@ -43,4 +43,6 @@ struct InputData
 ///////////////////////////////////////////////////////////////////////////////
 float4 _MainLightPosition;
 half4 _MainLightColor;
+
+float4 _ScaledScreenParams;
 #endif

@@ -23,14 +23,14 @@ namespace CustomRenderPipeline
         {
             m_ActiveRenderPassQueue.Add(pass);
         }
-
-        public virtual void SetupLights(ScriptableRenderContext context, ref RenderingData renderingData) {}
+        
         public void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
             //.................Setp 1 SetLight..........................
             SetupLights(context, ref renderingData);
-            //.................Setp 2 Set Camera..........................
-            context.SetupCameraProperties(renderingData.cameraData.camera);
+            //.................Setp 2 Set Camera Properties..........................
+            SetupCameraProperties(renderingData,context);
+            //context.SetupCameraProperties(renderingData.cameraData.camera);
             //.................Setp 3 Execute Opaque..........................
             for (int i = 0; i < m_ActiveRenderPassQueue.Count; i++)
                 ExecuteRenderPass(context, m_ActiveRenderPassQueue[i],ref renderingData);
@@ -49,6 +49,22 @@ namespace CustomRenderPipeline
             context.ExecuteCommandBuffer(cmd);
             cmd.Clear();
         }
+
+        #region Execute 流程相关
+        public virtual void SetupLights(ScriptableRenderContext context, ref RenderingData renderingData) {}
+        
+        internal void SetupCameraProperties(RenderingData renderingData,ScriptableRenderContext context)
+        {
+            ref CommandBuffer cmd = ref renderingData.commandBuffer;
+            context.SetupCameraProperties(renderingData.cameraData.camera);
+
+            float scaledCameraWidth = 0;//(float)renderingData.cameraData.cameraTargetDescriptor.width;
+            float scaledCameraHeight = 0;//(float)renderingData.cameraData.cameraTargetDescriptor.height;
+            cmd.SetGlobalVector(ShaderPropertyId.scaledScreenParams,new Vector4(scaledCameraWidth, scaledCameraHeight, 1.0f + 1.0f / scaledCameraWidth, 1.0f + 1.0f / scaledCameraHeight));
+        }
+        
+
+        #endregion
 
         //手动GC
         public void Dispose()

@@ -33,6 +33,15 @@ float4x4 unity_MatrixInvVP;
 float4x4 glstate_matrix_projection;
 
 float3 _WorldSpaceCameraPos;
+//....................................
+
+// Unity specific
+TEXTURECUBE(unity_SpecCube0);
+SAMPLER(samplerunity_SpecCube0);
+TEXTURECUBE(unity_SpecCube1);
+SAMPLER(samplerunity_SpecCube1);
+real4 unity_SpecCube0_HDR;
+real4 unity_SpecCube1_HDR;
 
 float4x4 OptimizeProjectionMatrix(float4x4 M)
 {

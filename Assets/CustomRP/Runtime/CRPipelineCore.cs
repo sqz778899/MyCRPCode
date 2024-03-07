@@ -50,6 +50,7 @@ namespace CustomRenderPipeline
     internal static class ShaderPropertyId
     {
         public static readonly int worldSpaceCameraPos = Shader.PropertyToID("_WorldSpaceCameraPos");
+        public static readonly int scaledScreenParams = Shader.PropertyToID("_ScaledScreenParams");
         //...............Shadow About.................
         public static readonly int worldToShadowMatrix = Shader.PropertyToID("_MainLightWorldToShadow");
         public static readonly int shadowmapID = Shader.PropertyToID(GlobaName.shadowMapName);

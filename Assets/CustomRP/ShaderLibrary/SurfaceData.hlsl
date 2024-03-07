@@ -7,7 +7,7 @@ struct SurfaceData
     half3 albedo;
     half  alpha;
     half3 normalTS;
-    half  smoothness;
+    half  roughness;
     half  metallic;
     half  occlusion;
     half3 emission;

@@ -1,6 +1,10 @@
 #ifndef CUSTOM_GLOBAL_ILLUMINATION_INCLUDED
 #define CUSTOM_GLOBAL_ILLUMINATION_INCLUDED
+
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/EntityLighting.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SphericalHarmonics.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/ImageBasedLighting.hlsl"
+#include "../ShaderLibrary/BRDF.hlsl"
 
 half3 SampleSH(half3 normalWS)
 {
@@ -16,5 +20,26 @@ half3 SampleSH(half3 normalWS)
     //return half3(unity_SHBg.rrr);
     return max(half3(0, 0, 0), SampleSH9(SHCoefficients, normalWS));
 }
+half3 GlossyEnvironmentReflection(half3 reflectVector, half perceptualRoughness, half occlusion)
+{
+    half mip = PerceptualRoughnessToMipmapLevel(perceptualRoughness);
+    half4 encodedIrradiance1 = half4(SAMPLE_TEXTURECUBE_LOD(unity_SpecCube0, samplerunity_SpecCube0, reflectVector, mip));
 
+    half3 irradiance = DecodeHDREnvironment(encodedIrradiance1, unity_SpecCube0_HDR);
+    return irradiance * occlusion;
+}
+half3 GlobalIllumination(BRDFData brdfData, half3 normalWS, half3 viewDirectionWS,half3 bakedGI)
+{
+    //-viewDirectionWS相当于根据视角变化的光源方向，这个值就是根据视角变化的，反射
+    half3 reflectVector = reflect(-viewDirectionWS, normalWS);
+    half NoV = saturate(dot(normalWS, viewDirectionWS));
+    half fresnelTerm = Pow4(1.0 - NoV);
+    
+    half3 indirectDiffuse = bakedGI;
+    half3 indirectSpecular = GlossyEnvironmentReflection(reflectVector, brdfData.perceptualRoughness, 1.0h);
+
+    half3 color = EnvironmentBRDF(brdfData, indirectDiffuse, indirectSpecular, fresnelTerm);
+
+    return color;
+}
 #endif

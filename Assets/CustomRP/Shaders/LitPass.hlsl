@@ -4,6 +4,7 @@
 #include "../ShaderLibrary/Core.hlsl"
 #include "../ShaderLibrary/RealtimeLights.hlsl"
 #include "./LitInput.hlsl"
+#include "../ShaderLibrary/Lighting.hlsl"
 
 struct Attributes
 {
@@ -48,6 +49,9 @@ void InitInputData(Varyings input, half3 normalTS, out InputData inputData)
     //....................SH.....................
     inputData.bakedGI = SampleSH(input.normalWS);
     //SAMPLE_GI(input.positionWS, inputData.vertexSH);
+
+    //....................ScreenSpace.....................
+    inputData.normalizedScreenSpaceUV = input.positionCS.xy * rcp(_ScaledScreenParams.xy);
 }
 //..........................Vertex Shader.............................................
 Varyings LitPassVertex(Attributes input)
@@ -109,6 +113,9 @@ half4 LitPassFragment(Varyings input): SV_Target
 
     InputData inputData;
     InitInputData(input, surfaceData.normalTS, inputData);
+    
+    half4 test = CustomFragmentPBR(inputData,surfaceData);
+    return test;
     
     Light light = GetMainLight(TransformWorldToShadowCoord(input.positionWS));
     half NOL = saturate(dot(input.normalWS, _MainLightPosition.xyz)) * _MainLightColor;

@@ -57,9 +57,9 @@ namespace CustomRenderPipeline
         {
             ref CommandBuffer cmd = ref renderingData.commandBuffer;
             context.SetupCameraProperties(renderingData.cameraData.camera);
-
-            float scaledCameraWidth = 0;//(float)renderingData.cameraData.cameraTargetDescriptor.width;
-            float scaledCameraHeight = 0;//(float)renderingData.cameraData.cameraTargetDescriptor.height;
+            
+            float scaledCameraWidth =  (float)renderingData.cameraData.camera.pixelWidth;//cameraTargetDescriptor
+            float scaledCameraHeight =  (float)renderingData.cameraData.camera.pixelHeight;
             cmd.SetGlobalVector(ShaderPropertyId.scaledScreenParams,new Vector4(scaledCameraWidth, scaledCameraHeight, 1.0f + 1.0f / scaledCameraWidth, 1.0f + 1.0f / scaledCameraHeight));
         }
         

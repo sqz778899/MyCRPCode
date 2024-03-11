@@ -28,7 +28,7 @@ half3 GlossyEnvironmentReflection(half3 reflectVector, half perceptualRoughness,
     half3 irradiance = DecodeHDREnvironment(encodedIrradiance1, unity_SpecCube0_HDR);
     return irradiance * occlusion;
 }
-half3 GlobalIllumination(BRDFData brdfData, half3 normalWS, half3 viewDirectionWS,half3 bakedGI)
+half3 GlobalIllumination(BRDFData brdfData, half3 normalWS, half3 viewDirectionWS,half3 bakedGI,half occlusion)
 {
     //-viewDirectionWS相当于根据视角变化的光源方向，这个值就是根据视角变化的，反射
     half3 reflectVector = reflect(-viewDirectionWS, normalWS);
@@ -39,7 +39,6 @@ half3 GlobalIllumination(BRDFData brdfData, half3 normalWS, half3 viewDirectionW
     half3 indirectSpecular = GlossyEnvironmentReflection(reflectVector, brdfData.perceptualRoughness, 1.0h);
 
     half3 color = EnvironmentBRDF(brdfData, indirectDiffuse, indirectSpecular, fresnelTerm);
-
-    return color;
+    return color * occlusion;
 }
 #endif

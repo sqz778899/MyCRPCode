@@ -45,11 +45,12 @@ void InitializeBRDFData(inout SurfaceData surfaceData, out BRDFData brdfData)
     half3 brdfSpecular = lerp(kDielectricSpec.rgb, surfaceData.albedo, surfaceData.metallic);
 
     brdfData = (BRDFData)0;
-    brdfData.albedo = brdfDiffuse;
+    brdfData.albedo = surfaceData.albedo;
+    brdfData.diffuse = brdfDiffuse;
     brdfData.specular = brdfSpecular;
     brdfData.reflectivity = reflectivity;
     brdfData.perceptualRoughness = surfaceData.roughness;
-    brdfData.roughness = max(surfaceData.roughness,HALF_MIN_SQRT);
+    brdfData.roughness = max(PerceptualRoughnessToRoughness(surfaceData.roughness),HALF_MIN_SQRT);
     brdfData.roughness2 = max(brdfData.roughness * brdfData.roughness,HALF_MIN);
     //描述当光线与表面接触角度接近90度（接近平行于表面，也称为“擦边”或“grazing”）时的光照情况。
     //表面越来越光滑或者反射率越来越高，grazingTerm 越接近1，也就是说在光线与表面接近平行时，接收到的光线越多。
@@ -58,6 +59,18 @@ void InitializeBRDFData(inout SurfaceData surfaceData, out BRDFData brdfData)
     brdfData.normalizationTerm = brdfData.roughness * 4.0 + 2.0;
     //粗糙度的平方通常用于表示反射光分布的宽窄程度。
     brdfData.roughness2MinusOne = brdfData.roughness2 - 1.0;
+}
+
+half DirectBRDFSpecular(BRDFData brdfData, half3 normalWS, half3 lightDirectionWS, half3 viewDirectionWS)
+{
+    float3 lightDirectionWSFloat3 = float3(lightDirectionWS);
+    float3 halfDir = SafeNormalize(lightDirectionWSFloat3 + float3(viewDirectionWS));
+    float NoH = saturate(dot(float3(normalWS), halfDir));
+    half LoH = half(saturate(dot(lightDirectionWSFloat3, halfDir)));
+    float d = NoH * NoH * brdfData.roughness2MinusOne + 1.00001f;
+    half LoH2 = LoH * LoH;
+    half specularTerm = brdfData.roughness2 / ((d * d) * max(0.1h, LoH2) * brdfData.normalizationTerm);
+    return specularTerm;
 }
     
 #endif

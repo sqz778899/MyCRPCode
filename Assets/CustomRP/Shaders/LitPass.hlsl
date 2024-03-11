@@ -5,6 +5,9 @@
 #include "../ShaderLibrary/RealtimeLights.hlsl"
 #include "./LitInput.hlsl"
 #include "../ShaderLibrary/Lighting.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
+
 
 struct Attributes
 {
@@ -41,7 +44,7 @@ void InitInputData(Varyings input, half3 normalTS, out InputData inputData)
     float3 bitangent = sgn * cross(input.normalWS.xyz, input.tangentWS.xyz);
     half3x3 tangentToWorld = half3x3(input.tangentWS.xyz, bitangent.xyz, input.normalWS.xyz);
     inputData.tangentToWorld = tangentToWorld;
-    inputData.normalWS = TransformTangentToWorld(normalTS, tangentToWorld);
+    inputData.normalWS = normalize(TransformTangentToWorld(normalTS, tangentToWorld));
     
     //................Shadow.....................
     inputData.shadowCoord = TransformWorldToShadowCoord(input.positionWS);

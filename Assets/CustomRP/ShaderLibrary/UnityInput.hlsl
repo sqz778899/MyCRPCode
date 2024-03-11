@@ -19,6 +19,7 @@ CBUFFER_START(UnityPerDraw)
     real4 unity_SHBb;
     real4 unity_SHC;
 
+    //half4 unity_LightData;
     // Velocity
     float4x4 unity_MatrixPreviousM;
     float4x4 unity_MatrixPreviousMI;

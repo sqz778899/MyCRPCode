@@ -1,6 +1,6 @@
 #ifndef CUSTOM_SURFACE_DATA_INCLUDED
 #define CUSTOM_SURFACE_DATA_INCLUDED
-
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Macros.hlsl"
 // Must match Universal ShaderGraph master node
 struct SurfaceData
 {

@@ -8,12 +8,14 @@ struct Light
     half3   direction;
     half3   color;
     half    shadowAttenuation;
+    //float   distanceAttenuation; // full-float precision required on some platforms
 };
 
 Light GetMainLight()
 {
     Light light;
     light.direction = half3(_MainLightPosition.xyz);
+    //light.distanceAttenuation = unity_LightData.z;
     light.color = _MainLightColor.rgb;
     light.shadowAttenuation = 1.0;
     return light;

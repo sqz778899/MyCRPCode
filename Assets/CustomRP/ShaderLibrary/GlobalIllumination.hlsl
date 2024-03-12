@@ -23,10 +23,10 @@ half3 SampleSH(half3 normalWS)
 half3 GlossyEnvironmentReflection(half3 reflectVector, half perceptualRoughness, half occlusion)
 {
     half mip = PerceptualRoughnessToMipmapLevel(perceptualRoughness);
-    half4 encodedIrradiance1 = half4(SAMPLE_TEXTURECUBE_LOD(unity_SpecCube0, samplerunity_SpecCube0, reflectVector, mip));
+    half4 encodedIrradiance = half4(SAMPLE_TEXTURECUBE_LOD(unity_SpecCube0, samplerunity_SpecCube0, reflectVector, mip));
 
-    half3 irradiance = DecodeHDREnvironment(encodedIrradiance1, unity_SpecCube0_HDR);
-    return irradiance * occlusion;
+    half3 irradiance = DecodeHDREnvironment(encodedIrradiance, unity_SpecCube0_HDR);
+    return irradiance;
 }
 half3 GlobalIllumination(BRDFData brdfData, half3 normalWS, half3 viewDirectionWS,half3 bakedGI,half occlusion)
 {
@@ -39,6 +39,6 @@ half3 GlobalIllumination(BRDFData brdfData, half3 normalWS, half3 viewDirectionW
     half3 indirectSpecular = GlossyEnvironmentReflection(reflectVector, brdfData.perceptualRoughness, 1.0h);
 
     half3 color = EnvironmentBRDF(brdfData, indirectDiffuse, indirectSpecular, fresnelTerm);
-    return color * occlusion;
+    return color;
 }
 #endif

@@ -22,11 +22,11 @@ namespace CustomRenderPipeline
         void SetupMainLightConstants(CommandBuffer cmd, ref LightData lightData)
         {
             VisibleLight visiblelight = lightData.visibleLights[lightData.mainLightIndex];
-            Light light = visiblelight.light;
             Matrix4x4 lightLocalToWorld = visiblelight.localToWorldMatrix;
             Vector4 dir = -lightLocalToWorld.GetColumn(2);
             cmd.SetGlobalVector(LightConstantBuffer._MainLightPosition, dir);
-            cmd.SetGlobalVector(LightConstantBuffer._MainLightColor, light.color);
+            //这里的finalColor是linear的.把光转化成线性空间传进管线
+            cmd.SetGlobalVector(LightConstantBuffer._MainLightColor, visiblelight.finalColor);
         }
         
         public ForwardLights()

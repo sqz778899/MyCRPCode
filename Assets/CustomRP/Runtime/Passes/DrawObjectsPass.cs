@@ -48,7 +48,7 @@ namespace CustomRenderPipeline
             DrawingSettings drawingSettings = new DrawingSettings(
                 shaderTagIds[0], sortingSettings)
             {
-                perObjectData = PerObjectData.LightProbe
+                perObjectData = PerObjectData.ReflectionProbes |PerObjectData.LightProbe
             };
             for (int i = 1; i < shaderTagIds.Length; i++)
                 drawingSettings.SetShaderPassName(i, shaderTagIds[i]);

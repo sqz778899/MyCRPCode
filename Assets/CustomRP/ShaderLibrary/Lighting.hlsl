@@ -11,7 +11,8 @@ half3 LightingPhysicallyBased(BRDFData brdfData, Light mainLight,
     half3 radiance = mainLight.color  * (mainLight.shadowAttenuation * NdotL);
     //Spe
     half spe = DirectBRDFSpecular(brdfData,normalWS,mainLight.direction, viewDirectionWS);
-    return spe.rrr;
+    half3 brdf = brdfData.diffuse + brdfData.specular * spe;
+    return brdf * radiance;
 }
 
 half4 CustomFragmentPBR(InputData inputData, SurfaceData surfaceData)
@@ -23,6 +24,9 @@ half4 CustomFragmentPBR(InputData inputData, SurfaceData surfaceData)
         inputData.normalWS,inputData.viewDirectionWS,inputData.bakedGI,surfaceData.occlusion);
     half3 lightColor = LightingPhysicallyBased(brdfData,mainlight,
         inputData.normalWS,inputData.viewDirectionWS);
-    return half4(lightColor,1);
+
+    half3 result = lightColor + giColor;
+   
+    return half4(result,1);
 }
 #endif

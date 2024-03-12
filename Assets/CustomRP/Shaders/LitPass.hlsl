@@ -117,17 +117,7 @@ half4 LitPassFragment(Varyings input): SV_Target
     InputData inputData;
     InitInputData(input, surfaceData.normalTS, inputData);
     
-    half4 test = CustomFragmentPBR(inputData,surfaceData);
-    return test;
-    
-    Light light = GetMainLight(TransformWorldToShadowCoord(input.positionWS));
-    half NOL = saturate(dot(input.normalWS, _MainLightPosition.xyz)) * _MainLightColor;
-    float3 R = reflect(_MainLightPosition.xyz * -1, input.normalWS);
-    float3 V = normalize(_WorldSpaceCameraPos - input.positionWS);
-    float3 specular =  pow(max(0, dot(R, V)), 50);
-   
-    half3 Color = _MainLightColor.rgb * NOL * light.shadowAttenuation + specular;
-   
-    return half4(Color * inputData.bakedGI, 1);
+    half4 color = CustomFragmentPBR(inputData,surfaceData);
+    return color;
 }
 #endif

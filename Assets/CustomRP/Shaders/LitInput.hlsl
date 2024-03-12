@@ -47,7 +47,7 @@ void InitSurfaceData(float2 uv, out SurfaceData outSurfaceData)
     
     half4 rmoe = SAMPLE_TEXTURE2D(_RMOEMap,sampler_RMOEMap,SetUVST(uv,_RMOEMap_ST));
     
-#ifdef _METALLICPARAMETER_ON
+#ifdef _ROUGHNESSPARAMETER_ON
     outSurfaceData.roughness =_Roughness;
 #else
     outSurfaceData.roughness = rmoe.r;
